@@ -150,8 +150,12 @@ def score_all(world: World, rain: dict, drain_status: dict[str, str],
             level, eta = "red", 0.0
         first_amber = next((i for i, w in enumerate(series) if w >= AMBER_AT), None)
         blocked = [d for d in seg.drains if drain_status.get(d) in ("blocked", "partial")]
+        timeline = "".join(level_of(w)[0] for w in series)
+        if seg.id in observed_flooding:
+            timeline = "r" * len(series)
         results[seg.id] = {
             "level": level,
+            "timeline": timeline,
             "peak": round(peak, 1),
             "series": series,
             "eta": _clock(t0, eta) if eta is not None else None,

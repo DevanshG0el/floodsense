@@ -39,7 +39,7 @@ REPORT_REACH_M = 80.0
 # ---- helpers ----------------------------------------------------------------------------
 def get_rain(mode: Mode) -> dict:
     if mode == "replay":
-        return rain.shift_to_now(rain.load_replay())
+        return rain.load_replay()  # real clock times of the 9 Jul 2026 storm
     if time.time() - _live_cache["at"] > 900 or _live_cache["data"] is None:
         _live_cache["data"] = rain.live_forecast(hours=6)
         _live_cache["at"] = time.time()
@@ -101,7 +101,8 @@ def risk(mode: Mode = "replay") -> dict:
         seg = WORLD.segments[sid]
         feats.append({"type": "Feature", "id": sid, "geometry": seg.geometry, "properties": {
             "id": sid, "name": seg.name, "highway": seg.highway, "rank": seg.rank,
-            "level": res["level"], "eta": res["eta"], "risky_from": res["risky_from"],
+            "level": res["level"], "timeline": res["timeline"],
+            "eta": res["eta"], "risky_from": res["risky_from"],
             "reason": res["reason"], "underpass": seg.underpass,
             "blocked_drains": len(res["blocked_drains"]), "observed": res["observed"]}})
     counts = {"green": 0, "amber": 0, "red": 0}
@@ -164,7 +165,8 @@ def priorities(mode: Mode = "replay", top: int = 15) -> dict:
     items = model.drain_priorities(WORLD, r, status, scored, top=top)
     reports = STORE.reports()
     for it in items:
-        it["reports"] = [rp for rp in reports if rp.get("drain") == it["drain"]][-3:]
+        it["reports"] = [{**rp, "photo_url": f"/uploads/{rp['id']}.{rp.get('photo_ext', 'jpg')}"}
+                         for rp in reports if rp.get("drain") == it["drain"]][-3:]
     return {"rain": {k: v for k, v in scored["rain"].items() if k != "hours"},
             "red_now": sum(v["level"] == "red" for v in scored["segments"].values()),
             "items": items}
@@ -172,7 +174,8 @@ def priorities(mode: Mode = "replay", top: int = 15) -> dict:
 
 @app.get("/reports")
 def list_reports() -> list[dict]:
-    return list(reversed(STORE.reports()))
+    return [{**r, "photo_url": f"/uploads/{r['id']}.{r.get('photo_ext', 'jpg')}"}
+            for r in reversed(STORE.reports())]
 
 
 @app.post("/reports")
@@ -198,7 +201,7 @@ async def create_report(photo: UploadFile = File(...), lat: float = Form(...),
     linked_seg = seg_id if d_seg <= REPORT_REACH_M else None
 
     report = STORE.add_report({
-        "lat": lat, "lon": lon, "hint": hint, **check,
+        "lat": lat, "lon": lon, "hint": hint, "photo_ext": ext, **check,
         "drain": linked_drain if check["category"] in ("blocked_drain", "clear_drain") else None,
         "segment": linked_seg if check["category"] == "waterlogging" else None,
     })
