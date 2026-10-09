@@ -1,0 +1,36 @@
+{
+ "mode": "replay",
+ "source": "Open-Meteo historical forecast archive",
+ "label": "Replay of the 09 Jul 2026 storm",
+ "total_mm": 125.3,
+ "hours": [
+  {
+   "time": "2026-07-09T03:00",
+   "mm": 3.8
+  },
+  {
+   "time": "2026-07-09T04:00",
+   "mm": 13.5
+  },
+  {
+   "time": "2026-07-09T05:00",
+   "mm": 28.6
+  },
+  {
+   "time": "2026-07-09T06:00",
+   "mm": 10.5
+  },
+  {
+   "time": "2026-07-09T07:00",
+   "mm": 10.5
+  },
+  {
+   "time": "2026-07-09T08:00",
+   "mm": 27.8
+  },
+  {
+   "time": "2026-07-09T09:00",
+   "mm": 30.6
+  }
+ ]
+}
