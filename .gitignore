@@ -34,3 +34,6 @@ Thumbs.db
 .aws-sam/
 amplify/#current-cloud-backend
 amplify/.config/local-*
+
+# Runtime state (local store, uploaded photos)
+data/state/

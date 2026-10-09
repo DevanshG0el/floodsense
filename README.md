@@ -31,7 +31,7 @@ Backend (needs [uv](https://docs.astral.sh/uv/)):
 cd backend
 cp ../.env.example .env   # fill in values
 uv sync
-uv run uvicorn floodsense.api:app --reload
+uv run uvicorn floodsense.api:app --reload --port 8787
 ```
 
 Frontend (Node 20+):
