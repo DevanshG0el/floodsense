@@ -3,7 +3,17 @@
 import Link from "next/link";
 import { useEffect, useMemo, useRef, useState } from "react";
 
-import { Card, FloodMap, LevelBadge } from "@/components/Shell";
+import {
+  CameraIcon,
+  FloodMap,
+  Frame,
+  LevelBadge,
+  PinIcon,
+  PrimaryButton,
+  Section,
+  StatusPill,
+  TopBar,
+} from "@/components/Shell";
 import { api, photoUrl, type Report, type ReportResult } from "@/lib/api";
 import { useApp } from "@/lib/app-state";
 import { BBOX, CENTER, inArea } from "@/lib/area";
@@ -64,8 +74,6 @@ export default function ReportPage() {
     );
   };
 
-  const ready = kind && file && pin && !sending;
-
   const submit = async () => {
     if (!kind || !file || !pin) return;
     setSending(true);
@@ -77,8 +85,7 @@ export default function ReportPage() {
     form.append("hint", kind);
     form.append("mode", mode);
     try {
-      const r = await api.report(form);
-      setResult(r);
+      setResult(await api.report(form));
       refresh();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Something went wrong");
@@ -95,166 +102,193 @@ export default function ReportPage() {
     setError(null);
   };
 
-  return (
-    <div className="mx-auto max-w-5xl px-4 py-5">
-      <h1 className="text-xl font-semibold tracking-tight text-slate-900">{t.reportTitle}</h1>
-      <p className="mt-1 text-sm text-slate-600">{t.reportSub}</p>
+  const left = (
+    <>
+      <Section>
+        <h1 className="text-[28px] font-light leading-tight tracking-tight">{t.reportTitle}</h1>
+        <p className="mt-1.5 text-sm text-ink-2">{t.reportSub}</p>
+      </Section>
 
-      <div className="mt-5 grid gap-4 md:grid-cols-[1fr_360px]">
-        <div className="space-y-4">
-          {result ? (
-            <ResultCard result={result} onAgain={startOver} />
-          ) : (
-            <>
-              <Card>
-                <Step n={1} title={t.step1} done={!!kind} />
-                <div className="mt-3 grid grid-cols-2 gap-3">
-                  {(
-                    [
-                      ["blocked_drain", t.blockedDrain, t.blockedDrainHint, "🕳️"],
-                      ["waterlogging", t.waterlogging, t.waterloggingHint, "🌊"],
-                    ] as const
-                  ).map(([k, label, hint, icon]) => (
-                    <button
-                      key={k}
-                      type="button"
-                      onClick={() => setKind(k)}
-                      aria-pressed={kind === k}
-                      className={`rounded-xl border-2 p-4 text-left transition ${
-                        kind === k ? "border-blue-700 bg-blue-50" : "border-slate-200 hover:border-slate-300"
-                      }`}
-                    >
-                      <div className="text-2xl" aria-hidden>
-                        {icon}
-                      </div>
-                      <div className="mt-2 font-semibold text-slate-900">{label}</div>
-                      <div className="text-xs text-slate-600">{hint}</div>
-                    </button>
-                  ))}
-                </div>
-              </Card>
+      {result ? (
+        <Section>
+          <ResultCard result={result} onAgain={startOver} />
+        </Section>
+      ) : (
+        <>
+          <Section title={<Step n={1} title={t.step1} done={!!kind} />}>
+            <div className="grid grid-cols-2 gap-2">
+              {(
+                [
+                  ["blocked_drain", t.blockedDrain, t.blockedDrainHint],
+                  ["waterlogging", t.waterlogging, t.waterloggingHint],
+                ] as const
+              ).map(([k, label, hint]) => (
+                <button
+                  key={k}
+                  type="button"
+                  onClick={() => setKind(k)}
+                  aria-pressed={kind === k}
+                  className={`rounded-2xl p-4 text-left transition ${
+                    kind === k ? "bg-ink text-white" : "bg-sunken text-ink hover:bg-[#ebebeb]"
+                  }`}
+                >
+                  <KindIcon kind={k} className="h-6 w-6" />
+                  <div className="mt-3 text-sm font-medium">{label}</div>
+                  <div className={`mt-0.5 text-xs ${kind === k ? "text-white/70" : "text-ink-3"}`}>{hint}</div>
+                </button>
+              ))}
+            </div>
+          </Section>
 
-              <Card>
-                <Step n={2} title={t.step2} done={!!file} />
-                <input
-                  ref={fileInput}
-                  type="file"
-                  accept="image/*"
-                  capture="environment"
-                  className="sr-only"
-                  onChange={(e) => setFile(e.target.files?.[0] ?? null)}
-                />
-                {preview ? (
-                  <div className="mt-3 flex items-center gap-3">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src={preview} alt="Your photo" className="h-24 w-24 rounded-lg object-cover ring-1 ring-slate-200" />
-                    <button
-                      type="button"
-                      onClick={() => fileInput.current?.click()}
-                      className="rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
-                    >
-                      {t.changePhoto}
-                    </button>
-                  </div>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => fileInput.current?.click()}
-                    className="mt-3 flex w-full flex-col items-center justify-center gap-1 rounded-xl border-2 border-dashed border-slate-300 py-8 text-sm font-medium text-slate-700 hover:border-blue-400 hover:bg-blue-50/40"
-                  >
-                    <span className="text-2xl" aria-hidden>
-                      📷
-                    </span>
-                    {t.takePhoto}
-                  </button>
-                )}
-              </Card>
-
-              <Card>
-                <Step n={3} title={t.step3} done={!!pin} />
-                <div className="mt-3 flex flex-wrap items-center gap-2">
-                  <button
-                    type="button"
-                    onClick={locate}
-                    className="rounded-lg border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 hover:bg-slate-50"
-                  >
-                    📍 {t.useMyLocation}
-                  </button>
-                  <span className="text-xs text-slate-500">{locMsg ?? t.tapMapToPlace}</span>
-                </div>
-                <FloodMap
-                  center={CENTER}
-                  bbox={BBOX}
-                  pin={pin}
-                  focus={focus}
-                  onMapClick={(lon, lat) => inArea(lat, lon) && setPin({ lon, lat })}
-                  className="mt-3 h-64 rounded-xl ring-1 ring-slate-200"
-                  label="Pick the report location"
-                />
-              </Card>
-
-              {error && <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-800">{error}</p>}
-
+          <Section title={<Step n={2} title={t.step2} done={!!file} />}>
+            <input
+              ref={fileInput}
+              type="file"
+              accept="image/*"
+              capture="environment"
+              className="sr-only"
+              onChange={(e) => setFile(e.target.files?.[0] ?? null)}
+            />
+            {preview ? (
+              <div className="flex items-center gap-3">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={preview} alt="Your photo" className="h-20 w-20 rounded-2xl object-cover" />
+                <button
+                  type="button"
+                  onClick={() => fileInput.current?.click()}
+                  className="rounded-full bg-sunken px-4 py-2 text-sm hover:bg-[#ebebeb]"
+                >
+                  {t.changePhoto}
+                </button>
+              </div>
+            ) : (
               <button
                 type="button"
-                disabled={!ready}
-                onClick={submit}
-                className="w-full rounded-xl bg-blue-700 py-3.5 text-base font-semibold text-white shadow-sm transition hover:bg-blue-800 disabled:cursor-not-allowed disabled:bg-slate-300"
+                onClick={() => fileInput.current?.click()}
+                className="flex w-full flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-ink-4 py-7 text-sm text-ink-2 transition hover:border-ink hover:text-ink"
               >
-                {sending ? t.sending : t.submit}
+                <CameraIcon className="h-6 w-6" />
+                {t.takePhoto}
               </button>
-            </>
+            )}
+          </Section>
+
+          <Section title={<Step n={3} title={t.step3} done={!!pin} />}>
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                type="button"
+                onClick={locate}
+                className="flex items-center gap-1.5 rounded-full bg-sunken px-4 py-2 text-sm hover:bg-[#ebebeb]"
+              >
+                <PinIcon className="h-4 w-4" />
+                {t.useMyLocation}
+              </button>
+              {pin ? (
+                <StatusPill level="green">
+                  {t.pinPlaced} · {pin.lat.toFixed(4)}, {pin.lon.toFixed(4)}
+                </StatusPill>
+              ) : (
+                <span className="text-xs text-ink-3">{locMsg ?? t.tapMapToPlace}</span>
+              )}
+            </div>
+          </Section>
+
+          <Section>
+            {error && <p className="mb-3 rounded-2xl bg-sunken px-3 py-2 text-sm text-risk-red">{error}</p>}
+            <PrimaryButton onClick={submit} disabled={!kind || !file || !pin || sending} className="w-full py-3.5">
+              {sending ? t.sending : t.submit}
+            </PrimaryButton>
+          </Section>
+        </>
+      )}
+    </>
+  );
+
+  const right = (
+    <>
+      <TopBar />
+      <div className="relative h-[55dvh] overflow-hidden rounded-panel bg-white md:h-auto md:flex-1">
+        <FloodMap
+          center={CENTER}
+          bbox={BBOX}
+          pin={pin}
+          focus={focus}
+          onMapClick={(lon, lat) => !result && inArea(lat, lon) && setPin({ lon, lat })}
+          className="h-full w-full"
+          label="Pick the report location"
+        />
+        {!pin && !result && (
+          <div className="pointer-events-none absolute left-1/2 top-3 -translate-x-1/2">
+            <StatusPill level="ink" tone="white">
+              {t.tapMap}
+            </StatusPill>
+          </div>
+        )}
+        <div className="absolute bottom-3 left-3 w-[min(340px,calc(100%-1.5rem))] rounded-2xl bg-white p-4 shadow-sm">
+          <div className="mb-2 text-sm">{t.recent}</div>
+          {recent === null ? (
+            <div className="h-14 animate-pulse rounded-xl bg-sunken" />
+          ) : recent.length === 0 ? (
+            <p className="text-xs text-ink-3">{t.noReports}</p>
+          ) : (
+            <ul className="space-y-2">
+              {recent.slice(0, 3).map((r) => (
+                <li key={r.id} className="flex items-center gap-3">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={photoUrl(r.photo_url)}
+                    alt=""
+                    onError={(e) => ((e.target as HTMLImageElement).style.visibility = "hidden")}
+                    className="h-10 w-10 shrink-0 rounded-xl bg-sunken object-cover"
+                  />
+                  <div className="min-w-0 text-sm">
+                    <div className="truncate">{CATEGORY_LABEL[r.category]}</div>
+                    <div className="truncate text-xs text-ink-3">
+                      {r.created_at.slice(11, 16)} · {r.drain ?? r.segment ?? "unmatched"} ·{" "}
+                      {r.verified ? t.aiVerified : t.aiUnverified}
+                    </div>
+                  </div>
+                </li>
+              ))}
+            </ul>
           )}
         </div>
-
-        <aside>
-          <Card>
-            <h2 className="text-sm font-semibold text-slate-900">{t.recent}</h2>
-            {recent === null ? (
-              <div className="mt-3 h-20 animate-pulse rounded-lg bg-slate-100" />
-            ) : recent.length === 0 ? (
-              <p className="mt-2 text-sm text-slate-600">{t.noReports}</p>
-            ) : (
-              <ul className="mt-3 divide-y divide-slate-100">
-                {recent.slice(0, 8).map((r) => (
-                  <li key={r.id} className="flex gap-3 py-2.5">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={photoUrl(r.photo_url)}
-                      alt=""
-                      onError={(e) => ((e.target as HTMLImageElement).style.visibility = "hidden")}
-                      className="h-12 w-12 shrink-0 rounded-md bg-slate-100 object-cover"
-                    />
-                    <div className="min-w-0 text-sm">
-                      <div className="font-medium text-slate-900">{CATEGORY_LABEL[r.category]}</div>
-                      <div className="truncate text-xs text-slate-500">
-                        {r.created_at.slice(11, 16)} · {r.drain ?? r.segment ?? "unmatched"} ·{" "}
-                        {r.verified ? t.aiVerified : t.aiUnverified}
-                      </div>
-                    </div>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </Card>
-        </aside>
       </div>
-    </div>
+    </>
   );
+
+  return <Frame left={left} right={right} leftFirstOnMobile />;
 }
 
 function Step({ n, title, done }: { n: number; title: string; done: boolean }) {
   return (
-    <h2 className="flex items-center gap-2 text-sm font-semibold text-slate-900">
+    <span className="flex items-center gap-2">
       <span
-        className={`grid h-6 w-6 place-items-center rounded-full text-xs ${
-          done ? "bg-green-600 text-white" : "bg-slate-200 text-slate-700"
+        className={`grid h-5 w-5 place-items-center rounded-full text-[10px] ${
+          done ? "bg-ink text-white" : "bg-sunken text-ink-2"
         }`}
       >
         {done ? "✓" : n}
       </span>
       {title}
-    </h2>
+    </span>
+  );
+}
+
+function KindIcon({ kind, className }: { kind: Kind; className?: string }) {
+  const s = { fill: "none", stroke: "currentColor", strokeWidth: 1.6, strokeLinecap: "round" as const };
+  return kind === "blocked_drain" ? (
+    <svg viewBox="0 0 24 24" {...s} className={className} aria-hidden>
+      <rect x="4" y="6" width="16" height="12" rx="2" />
+      <path d="M8 6v12M12 6v12M16 6v12" />
+      <path d="M6 14c2-1 4 1 6 0s4-1 6 0" strokeWidth="2.2" />
+    </svg>
+  ) : (
+    <svg viewBox="0 0 24 24" {...s} className={className} aria-hidden>
+      <path d="M3 15c2-1.5 4-1.5 6 0s4 1.5 6 0 4-1.5 6 0" />
+      <path d="M3 19c2-1.5 4-1.5 6 0s4 1.5 6 0 4-1.5 6 0" />
+      <path d="M12 3c2 2.6 3.5 4.4 3.5 6.2a3.5 3.5 0 0 1-7 0C8.5 7.4 10 5.6 12 3z" />
+    </svg>
   );
 }
 
@@ -262,50 +296,39 @@ function ResultCard({ result, onAgain }: { result: ReportResult; onAgain: () => 
   const { t } = useApp();
   const r = result.report;
   return (
-    <Card className="space-y-4">
+    <div className="space-y-4">
       <div className="flex gap-4">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={photoUrl(r.photo_url)} alt="Reported photo" className="h-28 w-28 rounded-xl object-cover ring-1 ring-slate-200" />
+        <img src={photoUrl(r.photo_url)} alt="Reported photo" className="h-24 w-24 rounded-2xl object-cover" />
         <div className="min-w-0">
-          <span
-            className={`inline-flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold ring-1 ring-inset ${
-              r.verified ? "bg-blue-50 text-blue-800 ring-blue-600/20" : "bg-slate-100 text-slate-700 ring-slate-300"
-            }`}
-          >
-            {r.verified ? `✓ ${t.aiVerified}` : t.aiUnverified}
-          </span>
-          <div className="mt-2 text-lg font-semibold text-slate-900">{CATEGORY_LABEL[r.category]}</div>
-          <div className="text-sm text-slate-600">
-            {t.severity}: {"●".repeat(r.severity)}
-            <span className="text-slate-300">{"●".repeat(5 - r.severity)}</span>
+          <StatusPill level={r.verified ? "green" : "ink"}>{r.verified ? t.aiVerified : t.aiUnverified}</StatusPill>
+          <div className="mt-2 text-lg">{CATEGORY_LABEL[r.category]}</div>
+          <div className="text-xs text-ink-3">
+            {t.severity} {r.severity}/5
           </div>
-          {r.observations && <p className="mt-1 text-sm text-slate-600">{r.observations}</p>}
         </div>
       </div>
-
-      <div className="rounded-xl bg-slate-50 p-3 text-sm text-slate-800">
+      {r.observations && <p className="text-sm text-ink-2">{r.observations}</p>}
+      <div className="rounded-2xl bg-sunken p-4 text-sm">
         {result.message}
         {result.impact && (
-          <div className="mt-2 flex items-center gap-2">
+          <div className="mt-3 flex items-center gap-2">
             <LevelBadge level={result.impact.from} />
-            <span aria-hidden>→</span>
+            <span aria-hidden className="text-ink-3">
+              →
+            </span>
             <LevelBadge level={result.impact.to} />
           </div>
         )}
       </div>
-
       <div className="flex gap-2">
-        <Link href="/" className="flex-1 rounded-xl bg-blue-700 py-3 text-center text-sm font-semibold text-white hover:bg-blue-800">
+        <Link href="/" className="flex-1 rounded-full bg-ink py-3 text-center text-sm font-medium text-white hover:bg-black/80">
           {t.seeOnMap}
         </Link>
-        <button
-          type="button"
-          onClick={onAgain}
-          className="flex-1 rounded-xl border border-slate-300 py-3 text-sm font-semibold text-slate-700 hover:bg-slate-50"
-        >
+        <button type="button" onClick={onAgain} className="flex-1 rounded-full bg-sunken py-3 text-sm hover:bg-[#ebebeb]">
           {t.another}
         </button>
       </div>
-    </Card>
+    </div>
   );
 }

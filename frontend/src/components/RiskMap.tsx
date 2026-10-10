@@ -105,6 +105,16 @@ export default function RiskMap({
     (window as unknown as { __fsMap?: MapLibreMap }).__fsMap = map; // handy for debugging / demo scripts
 
     map.on("load", () => {
+      for (const layer of map.getStyle().layers) {
+        try {
+          if (layer.type === "fill" && /water/.test(layer.id)) map.setPaintProperty(layer.id, "fill-color", "#dfe7ee");
+          else if (layer.type === "fill") map.setPaintProperty(layer.id, "fill-opacity", 0.35);
+          if (layer.type === "symbol" && /poi|housenum/.test(layer.id)) map.setLayoutProperty(layer.id, "visibility", "none");
+          if (layer.type === "symbol") map.setPaintProperty(layer.id, "text-color", "#8a8a8a");
+        } catch {
+          /* layer without that property */
+        }
+      }
       // start with the attribution collapsed to its (i) button so it never covers the legend
       el.current?.querySelector(".maplibregl-ctrl-attrib")?.classList.remove("maplibregl-compact-show");
       const empty: GeoJSON.FeatureCollection = { type: "FeatureCollection", features: [] };
@@ -139,9 +149,9 @@ export default function RiskMap({
             12,
             ["case", ["==", ["get", "lv"], "green"], 1, 2],
             16,
-            ["case", ["==", ["get", "lv"], "green"], 3, 7],
+            ["case", ["==", ["get", "lv"], "green"], 2.5, 7],
           ],
-          "line-opacity": ["case", ["==", ["get", "lv"], "green"], 0.55, 0.95],
+          "line-opacity": ["case", ["==", ["get", "lv"], "green"], 0.32, 0.95],
         },
       });
       map.addLayer({
@@ -150,7 +160,7 @@ export default function RiskMap({
         source: "segments",
         filter: ["==", ["get", "id"], ""],
         layout: { "line-cap": "round" },
-        paint: { "line-color": "#0f172a", "line-width": 12, "line-opacity": 0.25 },
+        paint: { "line-color": "#0b0b0b", "line-width": 14, "line-opacity": 0.18 },
       });
       map.addLayer({
         id: "drain-dots",
@@ -179,7 +189,7 @@ export default function RiskMap({
         source: "pin",
         paint: {
           "circle-radius": 10,
-          "circle-color": "#1d4ed8",
+          "circle-color": "#0b0b0b",
           "circle-stroke-color": "#ffffff",
           "circle-stroke-width": 3,
         },
@@ -281,29 +291,28 @@ export default function RiskMap({
       {/* MapLibre's CSS sets .maplibregl-map to position:relative, so size it explicitly */}
       <div ref={el} className="h-full w-full" />
       {failed && (
-        <div className="absolute inset-0 grid place-items-center bg-slate-100 p-6 text-center text-sm text-slate-600">
+        <div className="absolute inset-0 grid place-items-center bg-sunken p-6 text-center text-sm text-ink-2">
           Your browser could not start the map (WebGL is off). The lists below still work.
         </div>
       )}
       {!ready && !failed && (
-        <div className="absolute inset-0 grid place-items-center bg-slate-100">
-          <div className="h-8 w-8 animate-spin rounded-full border-2 border-slate-300 border-t-blue-700" />
+        <div className="absolute inset-0 grid place-items-center bg-sunken">
+          <div className="h-8 w-8 animate-spin rounded-full border-2 border-ink-4 border-t-ink" />
         </div>
       )}
-      <div className="absolute right-3 top-3 flex flex-col overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm">
+      <div className="absolute right-3 top-3 flex flex-col gap-1 rounded-full bg-white p-1 shadow-sm">
         <button
           type="button"
           aria-label="Zoom in"
-          className="grid h-9 w-9 place-items-center text-lg text-slate-700 hover:bg-slate-50"
+          className="grid h-8 w-8 place-items-center rounded-full text-lg text-ink hover:bg-sunken"
           onClick={() => mapRef.current?.zoomIn()}
         >
           +
         </button>
-        <div className="h-px bg-slate-200" />
         <button
           type="button"
           aria-label="Zoom out"
-          className="grid h-9 w-9 place-items-center text-lg text-slate-700 hover:bg-slate-50"
+          className="grid h-8 w-8 place-items-center rounded-full text-lg text-ink hover:bg-sunken"
           onClick={() => mapRef.current?.zoomOut()}
         >
           −

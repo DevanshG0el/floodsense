@@ -1,23 +1,60 @@
 @import "tailwindcss";
 
+/*
+  FloodSense design tokens. Visual language: light grey canvas, large white rounded
+  panels, black as the only accent, thin oversized numerals, small dotted status pills.
+  Risk colours are reserved for risk and never used for decoration.
+*/
 @theme inline {
   --font-sans: var(--font-geist-sans), var(--font-deva), ui-sans-serif, system-ui, sans-serif;
+
+  --color-canvas: #ececec;
+  --color-panel: #ffffff;
+  --color-sunken: #f4f4f4;
+  --color-line: #e7e7e7;
+  --color-ink: #0b0b0b;
+  --color-ink-2: #4b4b4b;
+  --color-ink-3: #8f8f8f;
+  --color-ink-4: #c4c4c4;
+
+  --color-risk-red: #e5484d;
+  --color-risk-amber: #f5a524;
+  --color-risk-green: #30a46c;
+  --color-rain: #7cb8e6;
+
+  --radius-panel: 22px;
 }
 
-/* The app is light-only on purpose: the risk colours were chosen for a light map. */
 :root {
   color-scheme: light;
 }
 
 body {
   font-family: var(--font-sans);
+  background: var(--color-canvas);
+  color: var(--color-ink);
 }
 
-/* keep MapLibre's attribution readable but small */
+/* thin oversized numerals, like a dial readout */
+.num-hero {
+  font-weight: 300;
+  letter-spacing: -0.04em;
+  line-height: 0.9;
+  font-variant-numeric: tabular-nums;
+}
+
 .maplibregl-ctrl-attrib {
   font-size: 10px;
 }
 
-input[type="range"].timeline {
-  accent-color: #1d4ed8;
+/* keep attribution clear of the floating legend: tuck it under the zoom buttons */
+.maplibregl-ctrl-bottom-right {
+  top: 92px;
+  bottom: auto;
+}
+
+/* hide scrollbars inside panels but keep them scrollable */
+.scroll-quiet {
+  scrollbar-width: thin;
+  scrollbar-color: #d6d6d6 transparent;
 }
