@@ -278,6 +278,26 @@ def trigger_broadcast(body: BroadcastRequest) -> dict:
     return {**record, "details": result}
 
 
+class AskRequest(BaseModel):
+    question: str
+    mode: Mode = "replay"
+
+
+@app.post("/agent/ask")
+async def agent_ask(body: AskRequest) -> dict:
+    """Ask the Strands agent; the answer comes back with the tools it used."""
+    question = body.question.strip()[:300]
+    if not question:
+        raise HTTPException(400, "Ask a question about roads, rain or drains.")
+    from floodsense import agent  # imported lazily so the API starts fast
+    try:
+        return await run_in_threadpool(agent.ask, question, lambda: run(body.mode), WORLD,
+                                       STORE.drain_status)
+    except Exception as exc:
+        log.exception("agent failed")
+        raise HTTPException(503, "The assistant is unavailable right now.") from exc
+
+
 @app.post("/demo/reset")
 def demo_reset() -> dict:
     STORE.reset()

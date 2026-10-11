@@ -126,6 +126,15 @@ const en = {
   broadcastConfirm: "Send SMS",
   sendingSms: "Sending…",
   broadcastPreview: "Message",
+  askTitle: "Ask FloodSense",
+  askBadge: "AI agent",
+  askPlaceholder: "Will Minto Bridge flood this morning?",
+  ask: "Ask",
+  asking: "Thinking…",
+  askFailed: "The assistant is unavailable right now.",
+  askTrace: "How the agent answered",
+  askExamples: ["Will Minto Bridge flood?", "Is Janpath safe at 8 am?", "Which drain should be cleaned first?"],
+  askExamplesHi: ["क्या मिंटो ब्रिज पर पानी भरेगा?", "क्या जनपथ सुबह 8 बजे सुरक्षित है?", "पहले कौन सा नाला साफ़ करें?"],
 };
 
 export type Dict = typeof en;
@@ -254,6 +263,15 @@ const hi: Dict = {
   broadcastConfirm: "SMS भेजें",
   sendingSms: "भेज रहे हैं…",
   broadcastPreview: "संदेश",
+  askTitle: "FloodSense से पूछें",
+  askBadge: "AI एजेंट",
+  askPlaceholder: "क्या आज सुबह मिंटो ब्रिज पर पानी भरेगा?",
+  ask: "पूछें",
+  asking: "सोच रहे हैं…",
+  askFailed: "सहायक अभी उपलब्ध नहीं है।",
+  askTrace: "एजेंट ने कैसे जवाब दिया",
+  askExamples: ["Will Minto Bridge flood?", "Is Janpath safe at 8 am?", "Which drain should be cleaned first?"],
+  askExamplesHi: ["क्या मिंटो ब्रिज पर पानी भरेगा?", "क्या जनपथ सुबह 8 बजे सुरक्षित है?", "पहले कौन सा नाला साफ़ करें?"],
 };
 
 export const dictionaries: Record<Lang, Dict> = { en, hi };

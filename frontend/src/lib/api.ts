@@ -161,7 +161,20 @@ export interface BroadcastRecord {
   details?: { sent: boolean; message_id?: string; provider: string; error?: string };
 }
 
+export interface AgentAnswer {
+  answer: string;
+  trace: { tool: string; args: Record<string, string>; result: string }[];
+  model: string;
+  seconds: number;
+}
+
 export const api = {
+  ask: (question: string, mode: Mode) =>
+    req<AgentAnswer>("/agent/ask", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ question, mode }),
+    }),
   meta: () => req<Meta>("/meta"),
   risk: (mode: Mode) => req<RiskResponse>(`/risk?mode=${mode}`),
   segment: (id: string, mode: Mode) =>

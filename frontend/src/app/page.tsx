@@ -19,6 +19,7 @@ import {
   StatusPill,
   TopBar,
 } from "@/components/Shell";
+import { AskAgent } from "@/components/AskAgent";
 import { Gauge, HourRuler, RainBars } from "@/components/Viz";
 import { api, type Alert, type DrainProps, type Level, type RiskResponse, type SegmentDetail } from "@/lib/api";
 import { useApp } from "@/lib/app-state";
@@ -174,6 +175,8 @@ export default function CommuterPage() {
               {t.roadsRed} · <span className="text-ink">{counts.amber}</span> {t.roadsAmber}
             </p>
           </Section>
+
+          <AskAgent />
 
           <Section
             title={t.rainBreakdown}
