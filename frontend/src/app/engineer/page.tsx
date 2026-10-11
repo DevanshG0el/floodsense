@@ -34,9 +34,9 @@ export default function EngineerPage() {
 
   // Emergency broadcast states
   const [broadcastOpen, setBroadcastOpen] = useState(false);
-  const [broadcastPhone, setBroadcastPhone] = useState("+91 7504288815");
+  const [broadcastPhone, setBroadcastPhone] = useState("");
   const [sendingBroadcast, setSendingBroadcast] = useState(false);
-  const [broadcastToast, setBroadcastToast] = useState<string | null>(null);
+  const [broadcastToast, setBroadcastToast] = useState<{ ok: boolean; text: string } | null>(null);
 
   useEffect(() => {
     let live = true;
@@ -79,14 +79,17 @@ export default function EngineerPage() {
     setSendingBroadcast(true);
     try {
       const res = await api.sendBroadcast({
-        phone: broadcastPhone.trim(),
+        phone: broadcastPhone.trim() || undefined,
         mode,
       });
-      setBroadcastToast(`${t.broadcastSentDesc} (${res.recipient})`);
+      setBroadcastToast(
+        res.status === "sent"
+          ? { ok: true, text: `${t.broadcastSentDesc} ${res.recipient}` }
+          : { ok: false, text: `${t.broadcastNotSent} ${res.error ?? ""}` },
+      );
       setBroadcastOpen(false);
-    } catch {
-      setBroadcastToast("Broadcast transmitted in demo mode.");
-      setBroadcastOpen(false);
+    } catch (e) {
+      setBroadcastToast({ ok: false, text: e instanceof Error ? e.message : t.broadcastNotSent });
     } finally {
       setSendingBroadcast(false);
     }
@@ -153,20 +156,21 @@ export default function EngineerPage() {
           {/* Broadcast Confirmation Banner */}
           {broadcastToast && (
             <Section>
-              <div className="rounded-2xl bg-[#ecfdf5] border border-[#a7f3d0] p-4 text-sm text-[#065f46]">
+              <div className="rounded-2xl bg-sunken p-4 text-sm" role="status">
                 <div className="flex items-center justify-between gap-2">
-                  <span className="font-medium flex items-center gap-2">
-                    <span className="text-base">✓</span> {t.broadcastSent}
-                  </span>
+                  <StatusPill level={broadcastToast.ok ? "green" : "amber"}>
+                    {broadcastToast.ok ? t.broadcastSent : t.broadcastNotSentTitle}
+                  </StatusPill>
                   <button
                     type="button"
                     onClick={() => setBroadcastToast(null)}
-                    className="text-xs text-[#047857] hover:underline"
+                    aria-label={t.close}
+                    className="text-xs text-ink-3 hover:text-ink"
                   >
                     ✕
                   </button>
                 </div>
-                <p className="mt-1.5 text-xs text-[#047857] leading-relaxed">{broadcastToast}</p>
+                <p className="mt-2 text-xs leading-relaxed text-ink-2">{broadcastToast.text}</p>
               </div>
             </Section>
           )}
@@ -290,8 +294,8 @@ export default function EngineerPage() {
               </div>
               <p className="font-medium text-ink">
                 {topAlert
-                  ? `DELHI EMERGENCY BROADCAST: Flooding likely on ${topAlert.road} by ${topAlert.eta}.${topAlert.alternative ? ` Divert to ${topAlert.alternative}.` : ""} Commuters avoid low underpasses.`
-                  : "DELHI ADVISORY: Normal traffic flow across Central Delhi. No critical waterlogging predicted."}
+                  ? `FloodSense alert: ${topAlert.road ?? "A road"} in Central Delhi likely floods by ${topAlert.eta}.${topAlert.alternative ? ` Use ${topAlert.alternative} instead.` : ""} Avoid low underpasses.`
+                  : "FloodSense: no roads in Central Delhi are expected to flood in the next hours."}
               </p>
             </div>
 
@@ -303,12 +307,10 @@ export default function EngineerPage() {
                 type="tel"
                 value={broadcastPhone}
                 onChange={(e) => setBroadcastPhone(e.target.value)}
-                placeholder="+91 7504288815"
+                placeholder="+91 98xxxxxxxx"
                 className="w-full rounded-xl border border-line bg-sunken px-3.5 py-2.5 text-sm outline-none transition focus:border-ink focus:bg-white"
               />
-              <p className="mt-1.5 text-[11px] text-ink-3">
-                Sends alert to demo mobile device & logs telecom transmission for evaluation.
-              </p>
+              <p className="mt-1.5 text-[11px] text-ink-3">{t.broadcastPhoneHint}</p>
             </div>
 
             <div className="mt-6 flex items-center gap-3">
@@ -325,7 +327,7 @@ export default function EngineerPage() {
                 onClick={handleBroadcast}
                 className="flex-1 rounded-full bg-risk-red py-2.5 text-xs font-medium text-white hover:bg-red-700 transition disabled:opacity-50"
               >
-                {sendingBroadcast ? "Transmitting..." : `🚀 ${t.broadcastConfirm}`}
+                {sendingBroadcast ? t.sendingSms : t.broadcastConfirm}
               </button>
             </div>
           </div>

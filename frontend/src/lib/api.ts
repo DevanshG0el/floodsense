@@ -156,8 +156,9 @@ export interface BroadcastRecord {
   target_area: string;
   provider: string;
   alerts_count: number;
-  status: string;
-  details?: { sent: boolean; message_id: string; provider: string };
+  status: "sent" | "not_sent";
+  error?: string | null;
+  details?: { sent: boolean; message_id?: string; provider: string; error?: string };
 }
 
 export const api = {
@@ -180,7 +181,7 @@ export const api = {
   report: (form: FormData) => req<ReportResult>("/reports", { method: "POST", body: form }),
   reset: () => req<{ ok: boolean }>("/demo/reset", { method: "POST" }),
   broadcasts: () => req<BroadcastRecord[]>("/broadcasts"),
-  sendBroadcast: (body: { phone?: string; message?: string; mode: Mode }) =>
+  sendBroadcast: (body: { phone?: string; mode: Mode }) =>
     req<BroadcastRecord>("/broadcast", {
       method: "POST",
       headers: { "Content-Type": "application/json" },

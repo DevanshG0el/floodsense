@@ -11,7 +11,10 @@ client = TestClient(app)
 
 
 @pytest.fixture(autouse=True)
-def clean_state():
+def clean_state(monkeypatch):
+    # backend/.env may switch AWS on for the server; tests never call Bedrock or send SMS
+    monkeypatch.setenv("FLOODSENSE_USE_BEDROCK", "0")
+    monkeypatch.setenv("FLOODSENSE_USE_SNS", "0")
     STORE.reset()
     yield
     STORE.reset()
@@ -75,10 +78,11 @@ def test_counterfactual_never_makes_things_worse():
 
 
 def test_broadcast_endpoint():
-    res = client.post("/broadcast", json={"phone": "+919876543210", "mode": "replay"})
+    res = client.post("/broadcast", json={"phone": "98765 43210", "mode": "replay"})
     assert res.status_code == 200
     data = res.json()
-    assert data["status"] == "transmitted"
+    assert data["status"] == "not_sent"
     assert data["recipient"] == "+919876543210"
-    assert "DELHI EMERGENCY BROADCAST" in data["message"]
-    assert len(client.get("/broadcasts").json()) >= 1
+    assert data["message"].startswith("FloodSense alert:")
+    assert len(client.get("/broadcasts").json()) == 1
+    assert client.post("/broadcast", json={"phone": "hello"}).status_code == 400

@@ -247,11 +247,8 @@ def _report_message(check: dict, drain: str | None, seg: str | None, impact: dic
     return "Thanks. Your report was added and the engineer can see it."
 
 
-
-
 class BroadcastRequest(BaseModel):
-    phone: str | None = None
-    message: str | None = None
+    phone: str | None = None  # the text is always built from the model, never taken from callers
     mode: Mode = "replay"
 
 
@@ -262,10 +259,12 @@ def list_broadcasts() -> list[dict]:
 
 @app.post("/broadcast")
 def trigger_broadcast(body: BroadcastRequest) -> dict:
+    phone = sms.normalise(body.phone) if body.phone else sms.default_phone()
+    if not phone:
+        raise HTTPException(400, "Enter a phone number like +91 98xxxxxxxx.")
     _, scored = run(body.mode)
     active_alerts = model.alerts(WORLD, scored)
-    msg = body.message or sms.prepare_broadcast_message(active_alerts)
-    phone = body.phone or sms.get_default_phone()
+    msg = sms.prepare_broadcast_message(active_alerts)
     result = sms.send_sms(phone, msg)
     record = STORE.add_broadcast({
         "message": msg,
@@ -273,9 +272,11 @@ def trigger_broadcast(body: BroadcastRequest) -> dict:
         "target_area": AREA_NAME,
         "provider": result["provider"],
         "alerts_count": len(active_alerts),
-        "status": "transmitted",
+        "status": "sent" if result["sent"] else "not_sent",
+        "error": result.get("error"),
     })
     return {**record, "details": result}
+
 
 @app.post("/demo/reset")
 def demo_reset() -> dict:
