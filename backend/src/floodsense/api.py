@@ -5,10 +5,12 @@
 
 from __future__ import annotations
 
+import logging
 import time
 from typing import Literal
 
 from fastapi import FastAPI, File, Form, HTTPException, UploadFile
+from fastapi.concurrency import run_in_threadpool
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.staticfiles import StaticFiles
@@ -19,6 +21,8 @@ from floodsense import model, rain, vision
 from floodsense.config import AREA_NAME, BBOX, CENTER, DATA_DIR
 from floodsense.geo import project
 from floodsense.store import LocalStore
+
+log = logging.getLogger("floodsense")
 
 app = FastAPI(title="FloodSense API", version="0.2.0")
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"],
@@ -192,7 +196,11 @@ async def create_report(photo: UploadFile = File(...), lat: float = Form(...),
     if ext not in ("jpg", "jpeg", "png", "webp"):
         ext = "jpg"
 
-    check = vision.verify_photo(data, ext, hint)
+    try:
+        check = await run_in_threadpool(vision.verify_photo, data, ext, hint)
+    except Exception:  # Bedrock down or throttled: keep the report, marked unverified
+        log.exception("photo verification failed")
+        check = vision.unverified(hint)
     _, before = run(mode)
 
     drain_id, d_drain = nearest(lon, lat, WORLD.drains, lambda d: (d.lon, d.lat))
