@@ -44,6 +44,11 @@ labelled as a replay. Switch to **Live forecast** to score the next 6 hours of r
 
 ## Architecture
 
+![FloodSense architecture on AWS](docs/architecture.jpg)
+
+<details>
+<summary>Same diagram as text (Mermaid)</summary>
+
 ```mermaid
 flowchart LR
   user([Commuter / resident / engineer]) --> amplify[AWS Amplify Hosting<br/>Next.js static site]
@@ -61,6 +66,8 @@ flowchart LR
   dem[(Copernicus DEM on the<br/>Registry of Open Data on AWS)] -. elevation, once .-> lambda
   meteo[(Open-Meteo<br/>forecast + archive)] -. rain .-> lambda
 ```
+
+</details>
 
 ### Where AWS fits
 
