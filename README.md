@@ -150,7 +150,8 @@ uv run uvicorn floodsense.api:app --app-dir src --port 8787
 uv run pytest            # 6 tests
 ```
 
-To use AWS locally, configure credentials (`aws configure`) and create `backend/.env`:
+To use AWS locally, configure credentials (`aws configure`) and create `backend/.env`
+(every setting is listed in [`.env.example`](.env.example)):
 
 ```bash
 AWS_REGION=us-east-1
