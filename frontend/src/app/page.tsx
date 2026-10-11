@@ -2,42 +2,13 @@
 
 import Link from "next/link";
 import React from "react";
-import { Brand } from "@/components/Shell";
+import { PillNavbar } from "@/components/PillNavbar";
 
 export default function LandingPage() {
   return (
     <div className="min-h-screen bg-[#cadde4] text-[#0a2540] selection:bg-[#288da6] selection:text-white">
-      {/* -------------------- Top Navigation (Darker, Bolder Links) -------------------- */}
-      <header className="sticky top-0 z-40 mx-auto w-full border-b border-[#b8cbd4] bg-[#cadde4]/95 backdrop-blur-md shadow-2xs">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-3.5 lg:px-12">
-          {/* Official FloodSense Brand Component */}
-          <Brand />
-
-          <nav className="hidden items-center gap-8 text-sm font-bold text-[#0d242e] md:flex">
-            <a href="#why-floodsense" className="transition hover:text-[#0284c7]">
-              Why FloodSense
-            </a>
-            <a href="#solutions" className="transition hover:text-[#0284c7]">
-              Solutions
-            </a>
-            <Link href="/report" className="transition hover:text-[#0284c7]">
-              Citizen Report
-            </Link>
-            <Link href="/engineer" className="transition hover:text-[#0284c7]">
-              Drain Crew
-            </Link>
-          </nav>
-
-          <div className="flex items-center gap-3">
-            <Link
-              href="/map"
-              className="rounded-full bg-[#0284c7] px-5 py-2 text-sm font-bold text-white shadow-xs transition hover:bg-[#0369a1] active:scale-95"
-            >
-              Launch Dashboard
-            </Link>
-          </div>
-        </div>
-      </header>
+      {/* -------------------- Floating pill navigation -------------------- */}
+      <PillNavbar />
 
       {/* -------------------- Hero Section (Subtle Moody / "Little Dark" Video with High-Contrast Text) -------------------- */}
       <section className="relative flex min-h-[82vh] items-center overflow-hidden px-6 lg:px-12">
