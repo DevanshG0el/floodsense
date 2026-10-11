@@ -13,12 +13,12 @@ from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.concurrency import run_in_threadpool
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
-from fastapi.responses import RedirectResponse
+from fastapi.responses import RedirectResponse, Response
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from shapely.geometry import Point
 
-from floodsense import model, rain, sms, vision
+from floodsense import metrics, model, rain, sms, vision
 from floodsense.config import AREA_NAME, BBOX, CENTER
 from floodsense.geo import project
 from floodsense.store import Photos, make_store
@@ -227,6 +227,9 @@ async def create_report(photo: UploadFile = File(...), lat: float = Form(...),
     elif check["category"] == "clear_drain" and linked_drain:
         STORE.set_drain(linked_drain, "clear", f"report {report['id']}")
 
+    metrics.put("ReportsProcessed")
+    if check["verified"]:
+        metrics.put("ReportsVerifiedByAI")
     _, after = run(mode)
     impact = None
     affected = (WORLD.drains[linked_drain].segments if report["drain"] else []) + \
@@ -271,6 +274,7 @@ def trigger_broadcast(body: BroadcastRequest) -> dict:
     active_alerts = model.alerts(WORLD, scored)
     msg = sms.prepare_broadcast_message(active_alerts)
     result = sms.send_sms(phone, msg)
+    metrics.put("SmsSent" if result["sent"] else "SmsFailed")
     record = STORE.add_broadcast({
         "message": msg,
         "recipient": phone,
@@ -296,11 +300,51 @@ async def agent_ask(body: AskRequest) -> dict:
         raise HTTPException(400, "Ask a question about roads, rain or drains.")
     from floodsense import agent  # imported lazily so the API starts fast
     try:
-        return await run_in_threadpool(agent.ask, question, lambda: run(body.mode), WORLD,
-                                       STORE.drain_status)
+        answer = await run_in_threadpool(agent.ask, question, lambda: run(body.mode), WORLD,
+                                         STORE.drain_status)
     except Exception as exc:
         log.exception("agent failed")
         raise HTTPException(503, "The assistant is unavailable right now.") from exc
+    metrics.put("AgentQuestions")
+    metrics.put("AgentToolCalls", len(answer["trace"]))
+    return answer
+
+
+class SpeakRequest(BaseModel):
+    text: str
+    lang: Literal["en", "hi"] = "en"
+
+
+@app.post("/speak")
+def speak(body: SpeakRequest) -> Response:
+    """Amazon Polly reads an alert aloud (for people who find reading hard)."""
+    from floodsense import voice
+
+    try:
+        audio = voice.speak(body.text, body.lang)
+    except Exception as exc:
+        log.exception("polly failed")
+        raise HTTPException(503, "Audio is unavailable right now.") from exc
+    metrics.put("AlertsSpoken")
+    return Response(audio, media_type="audio/mpeg")
+
+
+@app.post("/events")
+def scheduled_rescore() -> dict:
+    """Called hourly by EventBridge Scheduler (through Lambda Web Adapter's event pass-through):
+    rescore every road against the fresh forecast and publish the result to CloudWatch."""
+    _live_cache["at"] = 0.0  # force a fresh forecast
+    _, scored = run("live")
+    counts = {"green": 0, "amber": 0, "red": 0}
+    for res in scored["segments"].values():
+        counts[res["level"]] += 1
+    metrics.put("RescoreRuns")
+    metrics.put("LiveRedRoads", counts["red"])
+    metrics.put("LiveAmberRoads", counts["amber"])
+    metrics.put("LiveRainNext6hMm", scored["rain"]["total_mm"], "None")
+    log.info("rescored %s roads: %s", len(scored["segments"]), counts)
+    return {"rescored": len(scored["segments"]), "counts": counts,
+            "rain_mm": scored["rain"]["total_mm"], "at": scored["generated_at"]}
 
 
 @app.post("/demo/reset")

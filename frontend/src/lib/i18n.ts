@@ -135,6 +135,12 @@ const en = {
   askTrace: "How the agent answered",
   askExamples: ["Will Minto Bridge flood?", "Is Janpath safe at 8 am?", "Which drain should be cleaned first?"],
   askExamplesHi: ["क्या मिंटो ब्रिज पर पानी भरेगा?", "क्या जनपथ सुबह 8 बजे सुरक्षित है?", "पहले कौन सा नाला साफ़ करें?"],
+  listen: "Listen",
+  listening: "Playing…",
+  listenFailed: "Audio unavailable",
+  unnamedRoad: "This road",
+  spokenAlert: (road: string, time: string | null, alt: string | null) =>
+    `${road} is likely to flood${time ? ` by ${time}` : ""}.${alt ? ` Use ${alt} instead.` : ""}`,
 };
 
 export type Dict = typeof en;
@@ -272,6 +278,12 @@ const hi: Dict = {
   askTrace: "एजेंट ने कैसे जवाब दिया",
   askExamples: ["Will Minto Bridge flood?", "Is Janpath safe at 8 am?", "Which drain should be cleaned first?"],
   askExamplesHi: ["क्या मिंटो ब्रिज पर पानी भरेगा?", "क्या जनपथ सुबह 8 बजे सुरक्षित है?", "पहले कौन सा नाला साफ़ करें?"],
+  listen: "सुनें",
+  listening: "चल रहा है…",
+  listenFailed: "ऑडियो उपलब्ध नहीं",
+  unnamedRoad: "यह सड़क",
+  spokenAlert: (road: string, time: string | null, alt: string | null) =>
+    `${road} पर${time ? ` ${time} बजे तक` : ""} पानी भर सकता है।${alt ? ` इसके बजाय ${alt} का इस्तेमाल करें।` : ""}`,
 };
 
 export const dictionaries: Record<Lang, Dict> = { en, hi };

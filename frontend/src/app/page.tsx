@@ -20,6 +20,7 @@ import {
   TopBar,
 } from "@/components/Shell";
 import { AskAgent } from "@/components/AskAgent";
+import { ListenButton } from "@/components/ListenButton";
 import { Gauge, HourRuler, RainBars } from "@/components/Viz";
 import { api, type Alert, type DrainProps, type Level, type RiskResponse, type SegmentDetail } from "@/lib/api";
 import { useApp } from "@/lib/app-state";
@@ -431,6 +432,9 @@ function SelectedRoad({
               <span className="text-ink-2">{t.alternative}</span>
               <span className="text-right font-medium">{detail.alternative}</span>
             </div>
+          )}
+          {detail.level !== "green" && (
+            <ListenButton className="mt-3" text={t.spokenAlert(detail.name ?? name ?? t.unnamedRoad, detail.eta ?? detail.risky_from, detail.alternative)} />
           )}
         </>
       )}

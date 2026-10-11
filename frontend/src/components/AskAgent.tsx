@@ -5,6 +5,7 @@ import { useState } from "react";
 import { api, type AgentAnswer } from "@/lib/api";
 import { useApp } from "@/lib/app-state";
 
+import { ListenButton } from "./ListenButton";
 import { Section, StatusPill } from "./Shell";
 
 /** "Ask FloodSense": a question to the Strands agent, its answer, and the tools it used. */
@@ -78,6 +79,7 @@ export function AskAgent() {
       {res && !busy && (
         <div className="mt-3 space-y-3">
           <p className="text-sm leading-relaxed">{res.answer}</p>
+          <ListenButton text={res.answer} />
           <details className="rounded-2xl bg-sunken px-4 py-3 text-xs text-ink-2" open>
             <summary className="cursor-pointer select-none text-ink">
               {t.askTrace} · {res.trace.length} · {res.seconds}s
