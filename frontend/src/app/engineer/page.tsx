@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
 
 import {
@@ -32,11 +33,26 @@ export default function EngineerPage() {
   const [focus, setFocus] = useState<{ lon: number; lat: number; zoom?: number } | null>(null);
   const [active, setActive] = useState<string | null>(null);
 
+  // Municipal Authentication State
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
+  const [badgeId, setBadgeId] = useState("");
+  const [govtEmail, setGovtEmail] = useState("");
+  const [assignedWard, setAssignedWard] = useState("Central Delhi — Zone 4 (CP / ITO / Minto Bridge)");
+  const [securityPin, setSecurityPin] = useState("");
+
   // Emergency broadcast states
   const [broadcastOpen, setBroadcastOpen] = useState(false);
   const [broadcastPhone, setBroadcastPhone] = useState("+91 7504288815");
   const [sendingBroadcast, setSendingBroadcast] = useState(false);
   const [broadcastToast, setBroadcastToast] = useState<string | null>(null);
+
+  // Check existing session auth on mount
+  useEffect(() => {
+    const savedAuth = sessionStorage.getItem("floodsense_crew_auth");
+    if (savedAuth === "true") {
+      setIsAuthenticated(true);
+    }
+  }, []);
 
   useEffect(() => {
     let live = true;
@@ -56,11 +72,26 @@ export default function EngineerPage() {
 
   const highlight = useMemo(() => prio?.items.map((i) => i.drain) ?? [], [prio]);
 
+  const handleLoginSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const finalBadge = badgeId.trim() || "MCD-ENG-4092";
+    setBadgeId(finalBadge);
+    sessionStorage.setItem("floodsense_crew_auth", "true");
+    setIsAuthenticated(true);
+  };
+
+  const handleSignOut = () => {
+    sessionStorage.removeItem("floodsense_crew_auth");
+    setIsAuthenticated(false);
+    setBadgeId("");
+    setGovtEmail("");
+    setSecurityPin("");
+  };
+
   const markCleaned = async (id: string) => {
     setBusy(id);
     try {
       const r = await api.setDrain(id, "clear", mode);
-      // one line per road, even when several of its segments changed
       const seen = new Set<string>();
       const changed = r.changed.filter((c) => {
         const k = `${c.road ?? "Lane"}|${c.from}|${c.to}`;
@@ -110,12 +141,36 @@ export default function EngineerPage() {
       {prio && (
         <>
           <Section>
-            <h1 className="text-[28px] font-light leading-tight tracking-tight">{t.engTitle}</h1>
-            <p className="mt-1.5 text-sm text-ink-2">{t.engSub}</p>
+            {/* Authenticated Crew Status & Sign Out */}
+            <div className="mb-4 flex items-center justify-between rounded-xl border border-line bg-panel px-3.5 py-2.5 shadow-2xs">
+              <div className="flex items-center gap-2.5">
+                <div className="grid h-7 w-7 place-items-center rounded-lg bg-sunken text-ink">
+                  <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+                    <path d="m9 12 2 2 4-4" />
+                  </svg>
+                </div>
+                <div className="flex items-baseline gap-2">
+                  <span className="text-xs font-bold text-ink">Authorized Drain Crew</span>
+                  <span className="text-ink-4">·</span>
+                  <span className="font-mono text-[11px] font-semibold text-ink-3">Badge {badgeId || "MCD-ENG-4092"}</span>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={handleSignOut}
+                className="rounded-lg border border-line bg-sunken px-2.5 py-1 text-xs font-semibold text-ink-2 transition hover:bg-line hover:text-ink"
+              >
+                Sign Out
+              </button>
+            </div>
+
+            <h1 className="text-[28px] font-bold leading-tight tracking-tight text-ink">{t.engTitle}</h1>
+            <p className="mt-1.5 text-sm font-semibold text-[#0284c7]">{t.engSub}</p>
             <div className="mt-5 grid grid-cols-2 gap-4">
               <div>
                 <div className="flex items-start gap-2">
-                  <span className="num-hero text-[56px]">{prio.red_now}</span>
+                  <span className="num-hero text-[56px] font-bold text-ink">{prio.red_now}</span>
                   <span className="mt-1">
                     <StatusPill level={sev.level}>{sev.label}</StatusPill>
                   </span>
@@ -123,7 +178,7 @@ export default function EngineerPage() {
                 <div className="mt-1 text-xs text-ink-2">{t.roadsRed}</div>
               </div>
               <div className="border-l border-line pl-4">
-                <span className="num-hero text-[56px]">{reportedCount}</span>
+                <span className="num-hero text-[56px] font-bold text-ink">{reportedCount}</span>
                 <div className="mt-1 text-xs text-ink-2">{t.drainsReported}</div>
               </div>
             </div>
@@ -132,7 +187,7 @@ export default function EngineerPage() {
             <div className="mt-5 rounded-2xl bg-sunken p-4">
               <div className="flex items-center justify-between gap-3">
                 <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-risk-red">
+                  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-risk-red">
                     <span className="inline-block h-2 w-2 rounded-full bg-risk-red animate-pulse" />
                     {t.broadcastTitle}
                   </div>
@@ -141,50 +196,34 @@ export default function EngineerPage() {
                 <button
                   type="button"
                   onClick={() => setBroadcastOpen(true)}
-                  className="shrink-0 rounded-full bg-ink px-4 py-2 text-xs font-medium text-white transition hover:bg-black/80 flex items-center gap-1.5"
+                  className="shrink-0 rounded-full bg-[#0284c7] px-4 py-2 text-xs font-semibold text-white transition hover:bg-[#0369a1] flex items-center gap-1.5 shadow-xs"
                 >
-                  <span>📡</span>
+                  <span>📢</span>
                   <span>{t.broadcastBtn}</span>
                 </button>
               </div>
             </div>
           </Section>
 
-          {/* Broadcast Confirmation Banner */}
           {broadcastToast && (
-            <Section>
-              <div className="rounded-2xl bg-[#ecfdf5] border border-[#a7f3d0] p-4 text-sm text-[#065f46]">
-                <div className="flex items-center justify-between gap-2">
-                  <span className="font-medium flex items-center gap-2">
-                    <span className="text-base">✓</span> {t.broadcastSent}
-                  </span>
-                  <button
-                    type="button"
-                    onClick={() => setBroadcastToast(null)}
-                    className="text-xs text-[#047857] hover:underline"
-                  >
-                    ✕
-                  </button>
-                </div>
-                <p className="mt-1.5 text-xs text-[#047857] leading-relaxed">{broadcastToast}</p>
-              </div>
-            </Section>
+            <div className="rounded-2xl border border-line bg-sunken p-4 text-xs font-medium text-ink shadow-sm">
+              📢 {broadcastToast}
+            </div>
           )}
 
           {toast && (
             <Section>
-              <div className="rounded-2xl bg-sunken p-4 text-sm" role="status">
-                <div className="flex items-center gap-2">
-                  <StatusPill level="green">{t.cleaned}</StatusPill>
-                  <span className="font-medium">{toast.drain}</span>
+              <div className="rounded-2xl bg-sunken p-4 text-xs leading-relaxed text-ink">
+                <div className="font-bold text-ink">
+                  {t.cleaned}: {toast.drain}
                 </div>
                 {toast.changed.length === 0 ? (
-                  <p className="mt-2 text-ink-2">{t.noRoadChanged}</p>
+                  <p className="mt-1 text-ink-2">{t.noRoadChanged}</p>
                 ) : (
-                  <ul className="mt-3 space-y-2">
-                    {toast.changed.slice(0, 4).map((c, i) => (
-                      <li key={i} className="flex flex-wrap items-center gap-1.5">
-                        <span className="mr-1">{c.road ?? "Lane"}</span>
+                  <ul className="mt-2 space-y-1">
+                    {toast.changed.map((c, idx) => (
+                      <li key={idx} className="flex items-center gap-2">
+                        <span className="text-ink-2">{c.road ?? "Road"}</span>
                         <LevelBadge level={c.from} />
                         <span className="text-ink-3">→</span>
                         <LevelBadge level={c.to} />
@@ -208,7 +247,7 @@ export default function EngineerPage() {
                     refresh();
                   })
                 }
-                className="text-xs text-ink-3 hover:text-ink"
+                className="text-xs font-medium text-ink-3 hover:text-ink"
               >
                 {t.resetDemo}
               </button>
@@ -228,17 +267,17 @@ export default function EngineerPage() {
                         setFocus({ lon: it.lon, lat: it.lat, zoom: 17 });
                       }}
                     >
-                      <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-ink text-xs text-white">
+                      <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-[#0284c7] text-xs font-bold text-white shadow-xs">
                         {idx + 1}
                       </span>
                       <span className="min-w-0 flex-1">
                         <span className="flex items-center justify-between gap-2">
-                          <span className="text-sm font-medium">{it.drain}</span>
+                          <span className="text-sm font-bold text-ink">{it.drain}</span>
                           <StatusPill level={it.status === "blocked" ? "red" : it.status === "partial" ? "amber" : "ink"}>
                             {it.status === "blocked" ? t.reported : it.status === "partial" ? t.partial : t.notInspected}
                           </StatusPill>
                         </span>
-                        <span className="mt-1 block text-sm text-ink-2">{it.summary}</span>
+                        <span className="mt-1 block text-sm font-medium text-ink-2">{it.summary}</span>
                         <span className="mt-0.5 block text-xs text-ink-3">
                           {it.road ? `${it.road} · ` : ""}
                           {it.source === "osm" ? t.osmMapped : t.estimated}
@@ -250,7 +289,7 @@ export default function EngineerPage() {
                         type="button"
                         disabled={busy === it.drain}
                         onClick={() => markCleaned(it.drain)}
-                        className="rounded-full bg-ink px-4 py-1.5 text-xs font-medium text-white hover:bg-black/80 disabled:bg-ink-4"
+                        className="rounded-full bg-[#0284c7] px-4 py-1.5 text-xs font-bold text-white hover:bg-[#0369a1] disabled:bg-ink-4 shadow-xs"
                       >
                         {busy === it.drain ? "…" : `✓ ${t.markCleaned}`}
                       </button>
@@ -266,14 +305,14 @@ export default function EngineerPage() {
       {/* Emergency Broadcast Modal */}
       {broadcastOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
-          <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-150">
+          <div className="w-full max-w-md rounded-3xl border border-line bg-panel p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-150">
             <div className="flex items-start justify-between gap-3">
               <div>
-                <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-risk-red">
+                <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-risk-red">
                   <span className="h-2 w-2 rounded-full bg-risk-red animate-pulse" />
                   {t.broadcastTitle}
                 </div>
-                <h3 className="mt-1 text-lg font-medium">{t.broadcastTarget}</h3>
+                <h3 className="mt-1 text-lg font-bold text-ink">{t.broadcastTarget}</h3>
               </div>
               <button
                 type="button"
@@ -285,10 +324,10 @@ export default function EngineerPage() {
             </div>
 
             <div className="mt-4 rounded-2xl bg-sunken p-4 text-xs leading-relaxed">
-              <div className="mb-1 text-[11px] font-medium uppercase tracking-wider text-ink-3">
+              <div className="mb-1 text-[11px] font-bold uppercase tracking-wider text-ink-3">
                 {t.broadcastPreview}
               </div>
-              <p className="font-medium text-ink">
+              <p className="font-semibold text-ink">
                 {topAlert
                   ? `DELHI EMERGENCY BROADCAST: Flooding likely on ${topAlert.road} by ${topAlert.eta}.${topAlert.alternative ? ` Divert to ${topAlert.alternative}.` : ""} Commuters avoid low underpasses.`
                   : "DELHI ADVISORY: Normal traffic flow across Central Delhi. No critical waterlogging predicted."}
@@ -296,7 +335,7 @@ export default function EngineerPage() {
             </div>
 
             <div className="mt-4">
-              <label className="block text-xs font-medium text-ink-2 mb-1.5">
+              <label className="block text-xs font-bold text-ink-2 mb-1.5">
                 {t.broadcastPhone}
               </label>
               <input
@@ -304,7 +343,7 @@ export default function EngineerPage() {
                 value={broadcastPhone}
                 onChange={(e) => setBroadcastPhone(e.target.value)}
                 placeholder="+91 7504288815"
-                className="w-full rounded-xl border border-line bg-sunken px-3.5 py-2.5 text-sm outline-none transition focus:border-ink focus:bg-white"
+                className="w-full rounded-xl border border-line bg-sunken px-3.5 py-2.5 text-sm outline-none transition focus:border-ink focus:bg-panel font-medium text-ink"
               />
               <p className="mt-1.5 text-[11px] text-ink-3">
                 Sends alert to demo mobile device & logs telecom transmission for evaluation.
@@ -315,7 +354,7 @@ export default function EngineerPage() {
               <button
                 type="button"
                 onClick={() => setBroadcastOpen(false)}
-                className="flex-1 rounded-full bg-sunken py-2.5 text-xs font-medium text-ink hover:bg-[#eaeaea] transition"
+                className="flex-1 rounded-full bg-sunken py-2.5 text-xs font-bold text-ink hover:bg-[#e2ecf0] transition"
               >
                 Cancel
               </button>
@@ -323,7 +362,7 @@ export default function EngineerPage() {
                 type="button"
                 disabled={sendingBroadcast}
                 onClick={handleBroadcast}
-                className="flex-1 rounded-full bg-risk-red py-2.5 text-xs font-medium text-white hover:bg-red-700 transition disabled:opacity-50"
+                className="flex-1 rounded-full bg-risk-red py-2.5 text-xs font-bold text-white hover:bg-red-700 transition disabled:opacity-50"
               >
                 {sendingBroadcast ? "Transmitting..." : `🚀 ${t.broadcastConfirm}`}
               </button>
@@ -337,7 +376,7 @@ export default function EngineerPage() {
   const right = (
     <>
       <TopBar />
-      <div className="relative h-[55dvh] overflow-hidden rounded-panel bg-white md:h-auto md:flex-1">
+      <div className="relative h-[55dvh] overflow-hidden rounded-panel border border-line bg-panel shadow-sm md:h-auto md:flex-1">
         <FloodMap
           center={CENTER}
           bbox={BBOX}
@@ -349,9 +388,9 @@ export default function EngineerPage() {
           className="h-full w-full"
           label="Drains and at-risk roads"
         />
-        <div className="absolute bottom-3 left-3 rounded-2xl bg-white p-3 shadow-sm">
-          <div className="mb-2 px-1 text-sm">{t.drainStatus}</div>
-          <div className="flex flex-wrap items-center gap-4 px-1 pb-1 text-xs text-ink-2">
+        <div className="absolute bottom-3 left-3 rounded-2xl border border-line bg-panel p-3 shadow-md">
+          <div className="mb-2 px-1 text-sm font-bold text-ink">{t.drainStatus}</div>
+          <div className="flex flex-wrap items-center gap-4 px-1 pb-1 text-xs text-ink-2 font-medium">
             {(
               [
                 [LEVEL_COLOR.red, t.reported],
@@ -371,5 +410,95 @@ export default function EngineerPage() {
     </>
   );
 
-  return <Frame left={left} right={right} />;
+  return (
+    <>
+      <Frame left={left} right={right} />
+
+      {/* -------------------- Clean, Modern Municipal Login Popup -------------------- */}
+      {!isAuthenticated && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-[#0d242e]/70 p-4 backdrop-blur-md animate-in fade-in duration-200">
+          <div className="relative w-full max-w-md rounded-3xl border-2 border-line bg-panel p-7 sm:p-8 shadow-2xl animate-in zoom-in-95 duration-150">
+            {/* Clean Close to Public Map */}
+            <Link
+              href="/map"
+              className="absolute top-6 right-6 rounded-full p-1.5 text-ink-3 hover:bg-sunken hover:text-ink transition"
+              title="Return to Public Map"
+            >
+              <CloseIcon className="h-4 w-4" />
+            </Link>
+
+            {/* Clean, Bold Header */}
+            <div className="pr-8">
+              <h2 className="text-2xl font-bold tracking-tight text-ink">
+                Municipal Drain Crew Portal
+              </h2>
+            </div>
+
+            {/* Form with Clean Styling & Default Placeholders */}
+            <form onSubmit={handleLoginSubmit} className="mt-6 space-y-4">
+              {/* Badge ID */}
+              <div>
+                <label className="block text-sm font-semibold text-ink mb-1.5">
+                  Badge ID
+                </label>
+                <input
+                  type="text"
+                  value={badgeId}
+                  onChange={(e) => setBadgeId(e.target.value)}
+                  placeholder="Enter Badge ID (Default: MCD-ENG-4092)"
+                  className="w-full rounded-xl border border-line bg-white px-4 py-3 text-sm font-medium text-ink outline-none transition focus:border-[#0284c7] focus:ring-2 focus:ring-[#0284c7]/20 placeholder:text-slate-400"
+                />
+              </div>
+
+              {/* Assigned Civic Ward */}
+              <div>
+                <label className="block text-sm font-semibold text-ink mb-1.5">
+                  Assigned Civic Ward
+                </label>
+                <select
+                  value={assignedWard}
+                  onChange={(e) => setAssignedWard(e.target.value)}
+                  className="w-full rounded-xl border border-line bg-white px-4 py-3 text-sm font-semibold text-ink outline-none transition focus:border-[#0284c7] focus:ring-2 focus:ring-[#0284c7]/20 cursor-pointer"
+                >
+                  <option value="Central Delhi — Zone 4 (CP / ITO / Minto Bridge)">
+                    Central Delhi — Zone 4 (CP / ITO / Minto Bridge)
+                  </option>
+                  <option value="North Delhi — Zone 1 (Civil Lines / Kashmere Gate)">
+                    North Delhi — Zone 1 (Civil Lines / Kashmere Gate)
+                  </option>
+                  <option value="South Delhi — Zone 7 (Lajpat Nagar / Barapullah)">
+                    South Delhi — Zone 7 (Lajpat Nagar / Barapullah)
+                  </option>
+                </select>
+              </div>
+
+              {/* Security PIN */}
+              <div>
+                <label className="block text-sm font-semibold text-ink mb-1.5">
+                  Security PIN
+                </label>
+                <input
+                  type="password"
+                  value={securityPin}
+                  onChange={(e) => setSecurityPin(e.target.value)}
+                  placeholder="Enter Security PIN (Default: 482109)"
+                  className="w-full rounded-xl border border-line bg-white px-4 py-3 text-sm font-medium text-ink outline-none transition focus:border-[#0284c7] focus:ring-2 focus:ring-[#0284c7]/20 placeholder:text-slate-400"
+                />
+              </div>
+
+              {/* Blue Button: Verify Drain Queue (Solid Blue, No Arrows) */}
+              <div className="pt-2">
+                <button
+                  type="submit"
+                  className="w-full rounded-xl bg-[#0284c7] hover:bg-[#0369a1] py-3.5 text-base font-bold text-white shadow-md transition active:scale-[0.99] cursor-pointer"
+                >
+                  Verify Drain Queue
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+    </>
+  );
 }

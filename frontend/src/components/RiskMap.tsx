@@ -247,7 +247,13 @@ export default function RiskMap({
   useEffect(() => {
     const map = mapRef.current;
     if (!ready || !map) return;
-    map.setFilter("seg-selected", ["==", ["get", "id"], selectedId ?? ""]);
+    try {
+      if (map.isStyleLoaded() && map.getLayer("seg-selected")) {
+        map.setFilter("seg-selected", ["==", ["get", "id"], selectedId ?? ""]);
+      }
+    } catch {
+      // style still initializing
+    }
   }, [ready, selectedId]);
 
   useEffect(() => {

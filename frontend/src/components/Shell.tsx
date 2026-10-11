@@ -3,6 +3,7 @@
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import React from "react";
 
 import type { Level } from "@/lib/api";
 import { useApp } from "@/lib/app-state";
@@ -17,19 +18,30 @@ export const FloodMap = dynamic(() => import("./RiskMap"), {
 export function Brand({ compact = false }: { compact?: boolean }) {
   return (
     <Link href="/" className="flex items-center gap-2.5">
-      <svg viewBox="0 0 36 36" className={compact ? "h-7 w-7" : "h-9 w-9"} aria-hidden>
-        <circle cx="18" cy="18" r="17" fill="#0b0b0b" />
-        <path d="M18 7c4.2 5.2 7 8.8 7 12.2a7 7 0 1 1-14 0C11 15.8 13.8 12.2 18 7z" fill="#fff" />
-        <path d="M13.5 20.5c1.5 1 3 1 4.5 0s3-1 4.5 0" stroke="#0b0b0b" strokeWidth="1.6" fill="none" strokeLinecap="round" />
-        <path d="M14.5 23.5c1.2.8 2.3.8 3.5 0s2.3-.8 3.5 0" stroke="#0b0b0b" strokeWidth="1.6" fill="none" strokeLinecap="round" />
+      <svg viewBox="0 0 36 36" className={compact ? "h-7 w-7" : "h-9 w-9"} fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden>
+        <rect width="36" height="36" rx="10" fill="url(#fs-brand-grad)" />
+        <rect x="0.5" y="0.5" width="35" height="35" rx="9.5" stroke="white" strokeOpacity="0.25" />
+        <path d="M18 7C18 7 11.2 15.2 11.2 20.2C11.2 24 14.2 27 18 27C21.8 27 24.8 24 24.8 20.2C24.8 15.2 18 7 18 7Z" fill="white" />
+        <circle cx="18" cy="14.2" r="1.6" fill="#0284c7" />
+        <path d="M13.5 20C15 18.6 16.5 18.6 18 20C19.5 21.4 21 21.4 22.5 20" stroke="#0284c7" strokeWidth="2" strokeLinecap="round" />
+        <path d="M14.5 23.2C15.7 22.2 16.8 22.2 18 23.2C19.2 24.2 20.3 24.2 21.5 23.2" stroke="#0284c7" strokeWidth="1.6" strokeLinecap="round" strokeOpacity="0.75" />
+        <defs>
+          <linearGradient id="fs-brand-grad" x1="0" y1="0" x2="36" y2="36" gradientUnits="userSpaceOnUse">
+            <stop stopColor="#0ea5e9" />
+            <stop offset="0.5" stopColor="#0284c7" />
+            <stop offset="1" stopColor="#0369a1" />
+          </linearGradient>
+        </defs>
       </svg>
-      <span className={`${compact ? "text-lg" : "text-[22px]"} font-medium tracking-tight`}>FloodSense</span>
+      <span className={`${compact ? "text-lg" : "text-[22px]"} font-bold tracking-tight text-ink`}>
+        FloodSense
+      </span>
     </Link>
   );
 }
 
 const TABS = [
-  { href: "/", key: "tabMap" as const, icon: MapIcon },
+  { href: "/map", key: "tabMap" as const, icon: MapIcon },
   { href: "/report", key: "tabReport" as const, icon: CameraIcon },
   { href: "/engineer", key: "tabEngineer" as const, icon: WrenchIcon },
 ];
@@ -43,14 +55,14 @@ export function NavPill() {
   const { t } = useApp();
   const isActive = useActive();
   return (
-    <nav className="hidden items-center gap-1 rounded-full bg-white p-1.5 md:flex" aria-label="Main">
+    <nav className="hidden items-center gap-1 rounded-full border border-line bg-panel p-1.5 shadow-xs md:flex" aria-label="Main">
       {TABS.map(({ href, key }) => (
         <Link
           key={href}
           href={href}
           aria-current={isActive(href) ? "page" : undefined}
-          className={`whitespace-nowrap rounded-full px-4 py-2 text-sm transition ${
-            isActive(href) ? "bg-ink text-white" : "text-ink-2 hover:text-ink"
+          className={`whitespace-nowrap rounded-full px-4 py-2 text-sm font-semibold transition ${
+            isActive(href) ? "bg-[#0284c7] text-white shadow-xs" : "text-ink hover:bg-sunken hover:text-[#0284c7]"
           }`}
         >
           {t[key]}
@@ -63,6 +75,8 @@ export function NavPill() {
 export function BottomNav() {
   const { t } = useApp();
   const isActive = useActive();
+  const pathname = usePathname();
+  if (pathname === "/") return null;
   return (
     <nav
       className="fixed inset-x-3 bottom-3 z-30 grid grid-cols-3 rounded-full bg-ink p-1.5 shadow-lg md:hidden"
@@ -74,8 +88,8 @@ export function BottomNav() {
           key={href}
           href={href}
           aria-current={isActive(href) ? "page" : undefined}
-          className={`flex items-center justify-center gap-1.5 rounded-full py-2.5 text-xs font-medium ${
-            isActive(href) ? "bg-white text-ink" : "text-white/70"
+          className={`flex items-center justify-center gap-1.5 rounded-full py-2.5 text-xs font-semibold transition ${
+            isActive(href) ? "bg-[#0284c7] text-white" : "text-white/80 hover:text-white"
           }`}
         >
           <Icon className="h-4 w-4" />
@@ -99,7 +113,7 @@ export function TopBar({ children, freshness }: { children?: React.ReactNode; fr
       <div className="order-last w-full md:order-none md:w-auto md:min-w-0 md:flex-1">{children}</div>
       <div className="ml-auto flex items-center gap-2">
         {freshness && (
-          <span className="hidden items-center gap-1.5 whitespace-nowrap text-xs text-ink-2 xl:flex">
+          <span className="hidden items-center gap-1.5 whitespace-nowrap text-xs font-semibold text-ink-3 xl:flex">
             <SyncIcon className="h-4 w-4" />
             {freshness}
           </span>
@@ -134,7 +148,7 @@ export function TopBar({ children, freshness }: { children?: React.ReactNode; fr
           onClick={() => setLang(lang === "en" ? "hi" : "en")}
           label={lang === "en" ? "हिंदी में देखें" : "View in English"}
         >
-          <span className="text-sm font-medium">{lang === "en" ? "हिं" : "EN"}</span>
+          <span className="text-sm font-bold">{lang === "en" ? "हिं" : "EN"}</span>
         </IconButton>
       </div>
     </div>
@@ -154,7 +168,7 @@ export function Frame({
   return (
     <div className="mx-auto flex max-w-[1560px] flex-col gap-3 p-3 pb-24 md:h-dvh md:flex-row md:pb-3">
       <aside
-        className={`scroll-quiet flex shrink-0 flex-col rounded-panel bg-panel md:w-[400px] md:overflow-y-auto xl:w-[430px] ${
+        className={`scroll-quiet flex shrink-0 flex-col rounded-panel border border-line bg-panel shadow-xs md:w-[400px] md:overflow-y-auto xl:w-[430px] ${
           leftFirstOnMobile ? "" : "order-2 md:order-none"
         }`}
       >
@@ -171,7 +185,7 @@ export function Frame({
 
 // ---------------------------------------------------------------- primitives
 export function Panel({ children, className = "" }: { children: React.ReactNode; className?: string }) {
-  return <section className={`rounded-panel bg-panel p-5 ${className}`}>{children}</section>;
+  return <section className={`rounded-panel border border-line bg-panel p-5 shadow-xs ${className}`}>{children}</section>;
 }
 
 /** A divider-separated section inside the left panel. */
@@ -190,7 +204,7 @@ export function Section({
     <div className={`border-b border-line px-6 py-5 last:border-b-0 ${className}`}>
       {(title || aside) && (
         <div className="mb-3 flex items-center justify-between gap-2">
-          {title && <h2 className="text-[13px] font-medium text-ink">{title}</h2>}
+          {title && <h2 className="text-[14px] font-bold tracking-tight text-[#0284c7]">{title}</h2>}
           {aside}
         </div>
       )}
@@ -212,8 +226,8 @@ export function StatusPill({
   const dot = level === "ink" || !level ? "bg-ink" : LEVEL_DOT[level];
   return (
     <span
-      className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-full px-2.5 py-1 text-xs text-ink ${
-        tone === "white" ? "bg-white shadow-sm" : "bg-sunken"
+      className={`inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border border-line/60 px-2.5 py-1 text-xs font-semibold text-ink ${
+        tone === "white" ? "bg-panel shadow-xs" : "bg-sunken"
       }`}
     >
       <span className={`h-1.5 w-1.5 rounded-full ${dot}`} />
@@ -241,15 +255,15 @@ export function Segmented<T extends string>({
   size?: "sm" | "md";
 }) {
   return (
-    <div className="flex items-center gap-0.5 rounded-full bg-white p-1" role="group" aria-label={label}>
+    <div className="flex items-center gap-0.5 rounded-full border border-line bg-panel p-1 shadow-xs" role="group" aria-label={label}>
       {options.map((o) => (
         <button
           key={o.value}
           type="button"
           onClick={() => onChange(o.value)}
           aria-pressed={value === o.value}
-          className={`whitespace-nowrap rounded-full transition ${size === "sm" ? "px-3 py-1.5 text-xs" : "px-4 py-2 text-sm"} ${
-            value === o.value ? "bg-ink text-white" : "text-ink-2 hover:text-ink"
+          className={`whitespace-nowrap rounded-full transition font-medium ${size === "sm" ? "px-3 py-1.5 text-xs" : "px-4 py-2 text-sm"} ${
+            value === o.value ? "bg-[#0284c7] font-semibold text-white shadow-xs" : "text-ink-2 hover:bg-sunken hover:text-ink"
           }`}
         >
           {o.label}
@@ -276,7 +290,7 @@ export function IconButton({
       onClick={onClick}
       aria-label={label}
       title={label}
-      className={`grid h-10 w-10 shrink-0 place-items-center rounded-full bg-white text-ink transition hover:bg-sunken ${className}`}
+      className={`grid h-10 w-10 shrink-0 place-items-center rounded-full border border-line bg-panel text-ink transition hover:bg-sunken ${className}`}
     >
       {children}
     </button>
@@ -299,7 +313,7 @@ export function PrimaryButton({
       type="button"
       onClick={onClick}
       disabled={disabled}
-      className={`rounded-full bg-ink px-5 py-3 text-sm font-medium text-white transition hover:bg-black/80 disabled:cursor-not-allowed disabled:bg-ink-4 ${className}`}
+      className={`rounded-full bg-[#0284c7] px-5 py-3 text-sm font-bold text-white shadow-md transition hover:bg-[#0369a1] active:scale-95 disabled:cursor-not-allowed disabled:bg-ink-4 ${className}`}
     >
       {children}
     </button>
@@ -309,7 +323,7 @@ export function PrimaryButton({
 export function ErrorState({ onRetry }: { onRetry: () => void }) {
   const { t } = useApp();
   return (
-    <div className="m-6 rounded-2xl bg-sunken p-4 text-sm">
+    <div className="m-6 rounded-2xl border border-line bg-sunken p-4 text-sm font-medium">
       <p className="text-ink-2">{t.apiDown}</p>
       <PrimaryButton onClick={onRetry} className="mt-3 py-2">
         {t.retry}
@@ -327,7 +341,7 @@ type IconProps = { className?: string };
 const stroke = {
   fill: "none",
   stroke: "currentColor",
-  strokeWidth: 1.8,
+  strokeWidth: 2,
   strokeLinecap: "round" as const,
   strokeLinejoin: "round" as const,
 };

@@ -1,26 +1,27 @@
 @import "tailwindcss";
 
 /*
-  FloodSense design tokens. Visual language: light grey canvas, large white rounded
-  panels, black as the only accent, thin oversized numerals, small dotted status pills.
-  Risk colours are reserved for risk and never used for decoration.
+  FloodSense design tokens — Combination 5: Pearl Grey & Pale Aqua Theme.
+  Visual language: serene pale aqua & pearl grey canvas, luminous pearl panels,
+  deep oceanic slate typography with bold numerical hierarchy, ice sky blue rain accents,
+  and high-contrast risk indicators.
 */
 @theme inline {
   --font-sans: var(--font-geist-sans), var(--font-deva), ui-sans-serif, system-ui, sans-serif;
 
-  --color-canvas: #ececec;
-  --color-panel: #ffffff;
-  --color-sunken: #f4f4f4;
-  --color-line: #e7e7e7;
-  --color-ink: #0b0b0b;
-  --color-ink-2: #4b4b4b;
-  --color-ink-3: #8f8f8f;
-  --color-ink-4: #c4c4c4;
+  --color-canvas: #cadde4;
+  --color-panel: #f3f8fa;
+  --color-sunken: #dee9ee;
+  --color-line: #b8cbd4;
+  --color-ink: #0d242e;
+  --color-ink-2: #214352;
+  --color-ink-3: #476877;
+  --color-ink-4: #9ab7c4;
 
-  --color-risk-red: #e5484d;
-  --color-risk-amber: #f5a524;
-  --color-risk-green: #30a46c;
-  --color-rain: #7cb8e6;
+  --color-risk-red: #e63946;
+  --color-risk-amber: #f59e0b;
+  --color-risk-green: #2a9d66;
+  --color-rain: #288da6;
 
   --radius-panel: 22px;
 }
@@ -31,16 +32,31 @@
 
 body {
   font-family: var(--font-sans);
-  background: var(--color-canvas);
+  background-color: var(--color-canvas);
+  background-image: 
+    radial-gradient(at 15% 15%, rgba(180, 216, 228, 0.75) 0px, transparent 60%),
+    radial-gradient(at 85% 85%, rgba(195, 224, 234, 0.75) 0px, transparent 60%);
+  background-attachment: fixed;
   color: var(--color-ink);
 }
 
-/* thin oversized numerals, like a dial readout */
+/* Ensure white panels and cards adopt the Pearl Grey & Pale Aqua tint */
+.bg-white {
+  background-color: var(--color-panel);
+}
+
+/* Form inputs & checkboxes harmonized with Aqua theme */
+input[type="checkbox"], input[type="radio"] {
+  accent-color: var(--color-rain);
+}
+
+/* Bold, punchy oversized numerals with high-contrast tabular figures */
 .num-hero {
-  font-weight: 300;
+  font-weight: 700;
   letter-spacing: -0.04em;
   line-height: 0.9;
   font-variant-numeric: tabular-nums;
+  color: var(--color-ink);
 }
 
 .maplibregl-ctrl-attrib {
@@ -56,5 +72,5 @@ body {
 /* hide scrollbars inside panels but keep them scrollable */
 .scroll-quiet {
   scrollbar-width: thin;
-  scrollbar-color: #d6d6d6 transparent;
+  scrollbar-color: #9ab7c4 transparent;
 }

@@ -2,9 +2,9 @@ import type { Level } from "./api";
 import type { Dict } from "./i18n";
 
 export const LEVEL_COLOR: Record<Level, string> = {
-  green: "#30a46c",
-  amber: "#f5a524",
-  red: "#e5484d",
+  green: "#2a9d66",
+  amber: "#f59e0b",
+  red: "#e63946",
 };
 
 export const LEVEL_DOT: Record<Level, string> = {
