@@ -77,6 +77,235 @@ input[type="checkbox"], input[type="radio"] {
   display: none;
 }
 
+/* ---- landing page liquid glass navbar (LiquidNavbar.tsx) ------------------------------ */
+.lg-root {
+  --lg-spring: cubic-bezier(0.34, 1.36, 0.64, 1); /* close to a spring with a little bounce */
+  position: fixed;
+  inset: 16px 0 auto 0;
+  z-index: 100;
+  display: flex;
+  justify-content: center;
+  padding: 0 12px;
+  pointer-events: none;
+}
+.lg-nav {
+  pointer-events: auto;
+  width: min(820px, 100%);
+  padding: 3px;
+  border-radius: 999px;
+  /* the landing page palette: #cadde4 canvas, #0a2540 ink, #0284c7 accent */
+  background: linear-gradient(180deg, #fff 0%, #d3e3ea 9%, #a7c2ce 32%, #6f93a5 73%, #fff 100%);
+  box-shadow:
+    0.29px 4.36px 2.18px 0 rgba(10, 37, 64, 0.01),
+    0.48px 7.24px 3.63px 0 rgba(10, 37, 64, 0.02),
+    0.78px 11.7px 5.86px 0 rgba(10, 37, 64, 0.03),
+    1.28px 19.15px 9.6px 0 rgba(10, 37, 64, 0.04),
+    2.2px 32.97px 16.52px 0 rgba(10, 37, 64, 0.05),
+    4px 60px 30.07px 0 rgba(10, 37, 64, 0.1);
+}
+.lg-inner {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 8px 8px 14px;
+  border-radius: 999px;
+  background: linear-gradient(150deg, #c9dce4 0%, #e9f2f6 50.17%, #c1d6df 100%);
+  box-shadow: inset 0 1px 1.5px 0 rgba(10, 37, 64, 0.08), inset 0 -1px 1.5px 0 rgba(10, 37, 64, 0.08);
+}
+.lg-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.lg-brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding-right: 8px;
+  font-size: 15px;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: -0.01em;
+  color: #0a2540;
+  white-space: nowrap;
+}
+.lg-gem {
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+}
+.lg-gem-body {
+  display: grid;
+  place-items: center;
+  width: 22px;
+  height: 22px;
+  border-radius: 7px;
+  background: linear-gradient(135deg, #38bdf8 0%, #0284c7 55%, #0369a1 100%);
+  box-shadow: inset 0 1px 1px 0 rgba(255, 255, 255, 0.6), 0 4px 7px -1px rgba(3, 105, 161, 0.45);
+}
+.lg-gem-drop {
+  width: 15px;
+  height: 15px;
+}
+.lg-menu {
+  flex: 1;
+}
+.lg-menu-inner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.lg-links {
+  display: flex;
+  flex: 1;
+  justify-content: center;
+  gap: 4px;
+}
+.lg-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 34px;
+  padding: 10px 15px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  user-select: none;
+  color: rgba(10, 37, 64, 0.62);
+  background: rgba(255, 255, 255, 0);
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0), 0 8px 20px -6px rgba(2, 132, 199, 0),
+    -4px -4px 12px 0 rgba(255, 255, 255, 0);
+  transition: color 0.35s var(--lg-spring), background 0.35s var(--lg-spring),
+    box-shadow 0.35s var(--lg-spring), transform 0.35s var(--lg-spring);
+}
+.lg-link:hover,
+.lg-link:focus-visible {
+  color: #0a2540;
+  background: rgba(255, 255, 255, 0.5);
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.9), 0 8px 20px -6px rgba(2, 132, 199, 0.35),
+    -4px -4px 12px 0 rgba(255, 255, 255, 0.5);
+  outline: none;
+}
+.lg-cta {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  padding: 11px 24px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1;
+  letter-spacing: 0.01em;
+  color: #fff;
+  white-space: nowrap;
+  user-select: none;
+  background: linear-gradient(180deg, #0ea5e9 0%, #0284c7 55%, #0369a1 100%);
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.35), inset 0 -1px 1px 0 rgba(3, 60, 100, 0.5),
+    0 7px 16px -6px rgba(3, 105, 161, 0.5);
+  transition: box-shadow 0.35s var(--lg-spring), opacity 0.35s ease;
+}
+.lg-cta:hover {
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.5), inset 0 -1px 1px 0 rgba(3, 60, 100, 0.5),
+    0 12px 24px -6px rgba(3, 105, 161, 0.65);
+}
+.lg-cta-label {
+  position: relative;
+  z-index: 1;
+}
+.lg-shine {
+  position: absolute;
+  z-index: 0;
+  top: -20px;
+  left: -70px;
+  width: 70px;
+  height: 90px;
+  opacity: 0;
+  transform: rotate(20deg);
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0) 0%, rgba(255, 255, 255, 0.7) 50%, rgba(255, 255, 255, 0) 100%);
+  transition: left 0.8s cubic-bezier(0.25, 0.1, 0.25, 1), opacity 0.8s cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+.lg-cta:hover .lg-shine {
+  left: calc(100% + 70px);
+  opacity: 1;
+}
+.lg-toggle {
+  display: none;
+  position: relative;
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.5);
+  box-shadow: inset 0 1px 0 0 rgba(255, 255, 255, 0.9), 0 8px 20px -6px rgba(2, 132, 199, 0.35),
+    -4px -4px 12px 0 rgba(255, 255, 255, 0.5);
+  transition: transform 0.25s var(--lg-spring);
+}
+.lg-toggle:active {
+  transform: scale(0.9);
+}
+.lg-toggle span {
+  position: absolute;
+  left: 11px;
+  width: 18px;
+  height: 2px;
+  border-radius: 2px;
+  background: #0a2540;
+  transition: transform 0.45s var(--lg-spring), top 0.45s var(--lg-spring);
+}
+.lg-toggle span:first-child { top: 15px; }
+.lg-toggle span:last-child { top: 23px; }
+.lg-open .lg-toggle span:first-child { top: 19px; transform: rotate(45deg); }
+.lg-open .lg-toggle span:last-child { top: 19px; transform: rotate(-45deg); }
+
+@media (max-width: 760px) {
+  .lg-nav {
+    width: min(350px, 100%);
+    border-radius: 32px;
+    background: linear-gradient(180deg, #fff 0%, #dde9ee 4.5%, #8eacbb 50%, #dde9ee 95.5%, #fff 100%);
+  }
+  .lg-inner {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0;
+    padding: 8px 8px 8px 14px;
+    border-radius: 29px;
+    background: linear-gradient(160deg, #cde0e7 0%, #ebf3f7 55%, #c3d7df 100%);
+    box-shadow: inset 0 1px 1.5px 0 rgba(10, 37, 64, 0.1), inset 0 -1px 1.5px 0 rgba(10, 37, 64, 0.1);
+  }
+  .lg-toggle { display: block; }
+  /* the menu row collapses to zero height until the toggle opens it */
+  .lg-menu {
+    display: grid;
+    grid-template-rows: 0fr;
+    transition: grid-template-rows 0.45s var(--lg-spring);
+  }
+  .lg-open .lg-menu { grid-template-rows: 1fr; }
+  .lg-menu-inner {
+    overflow: hidden;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 14px;
+    padding-right: 6px;
+  }
+  .lg-open .lg-menu-inner { padding-top: 14px; padding-bottom: 6px; }
+  .lg-links { flex-direction: column; gap: 2px; }
+  .lg-link { width: 100%; justify-content: flex-start; }
+  .lg-cta { padding: 14px 24px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .lg-root *,
+  .lg-root *::before,
+  .lg-root *::after {
+    transition: none !important;
+  }
+}
+
 /* ---- landing page pill navbar (PillNavbar.tsx) ---------------------------------------- */
 /* anchor jumps land below the floating bar */
 section[id] {

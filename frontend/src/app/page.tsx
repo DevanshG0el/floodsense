@@ -2,16 +2,17 @@
 
 import Link from "next/link";
 import React from "react";
-import { PillNavbar } from "@/components/PillNavbar";
+import { LiquidNavbar } from "@/components/LiquidNavbar";
 
 export default function LandingPage() {
   return (
     <div className="min-h-screen bg-[#cadde4] text-[#0a2540] selection:bg-[#288da6] selection:text-white">
       {/* -------------------- Floating pill navigation -------------------- */}
-      <PillNavbar />
+      <LiquidNavbar />
 
       {/* -------------------- Hero Section (Subtle Moody / "Little Dark" Video with High-Contrast Text) -------------------- */}
-      <section className="relative flex min-h-[82vh] items-center overflow-hidden px-6 lg:px-12">
+      {/* top padding keeps the text clear of the floating navbar (about 90px tall) */}
+      <section className="relative flex min-h-[88vh] items-center overflow-hidden px-6 pb-16 pt-36 lg:px-12 lg:pt-40">
         {/* Full-width Street-Level Flood Video Background */}
         <div className="absolute inset-0 z-0 overflow-hidden">
           <video
