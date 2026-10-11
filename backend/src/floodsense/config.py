@@ -1,6 +1,8 @@
 """Project-wide constants: study area, paths, thresholds."""
 
+import os
 from pathlib import Path
+
 from dotenv import load_dotenv
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
@@ -9,6 +11,8 @@ load_dotenv(REPO_ROOT / ".env")
 DATA_DIR = REPO_ROOT / "data"
 RAW_DIR = DATA_DIR / "raw"
 PROCESSED_DIR = DATA_DIR / "processed"
+# On Lambda only /tmp is writable; there the real state lives in DynamoDB and S3 anyway.
+STATE_DIR = Path(os.getenv("FLOODSENSE_STATE_DIR", DATA_DIR / "state"))
 
 # Central Delhi study area: Connaught Place, Minto Bridge, ITO, Mandi House.
 # (south, west, north, east) in WGS84 degrees.

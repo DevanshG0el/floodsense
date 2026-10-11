@@ -1,0 +1,5 @@
+**
+!backend/requirements.txt
+!backend/src/**
+!data/processed/**
+**/__pycache__

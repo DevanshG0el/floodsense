@@ -13,14 +13,15 @@ from fastapi import FastAPI, File, Form, HTTPException, UploadFile
 from fastapi.concurrency import run_in_threadpool
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.gzip import GZipMiddleware
+from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from shapely.geometry import Point
 
 from floodsense import model, rain, sms, vision
-from floodsense.config import AREA_NAME, BBOX, CENTER, DATA_DIR
+from floodsense.config import AREA_NAME, BBOX, CENTER
 from floodsense.geo import project
-from floodsense.store import LocalStore
+from floodsense.store import Photos, make_store
 
 log = logging.getLogger("floodsense")
 
@@ -30,10 +31,14 @@ app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["*"],
 app.add_middleware(GZipMiddleware, minimum_size=2000)
 
 WORLD = model.World()
-STORE = LocalStore()
-UPLOADS = DATA_DIR / "state" / "uploads"
-UPLOADS.mkdir(parents=True, exist_ok=True)
-app.mount("/uploads", StaticFiles(directory=UPLOADS), name="uploads")
+STORE = make_store()
+PHOTOS = Photos()
+if PHOTOS.bucket:
+    @app.get("/uploads/{name}")
+    def photo(name: str) -> RedirectResponse:
+        return RedirectResponse(PHOTOS.link(name))
+else:
+    app.mount("/uploads", StaticFiles(directory=PHOTOS.dir), name="uploads")
 
 Mode = Literal["replay", "live"]
 _live_cache: dict = {"at": 0.0, "data": None}
@@ -213,8 +218,8 @@ async def create_report(photo: UploadFile = File(...), lat: float = Form(...),
         "drain": linked_drain if check["category"] in ("blocked_drain", "clear_drain") else None,
         "segment": linked_seg if check["category"] == "waterlogging" else None,
     })
-    path = UPLOADS / f"{report['id']}.{ext}"
-    path.write_bytes(data)
+    name = f"{report['id']}.{ext}"
+    PHOTOS.put(name, data, photo.content_type or "image/jpeg")
 
     if check["category"] == "blocked_drain" and linked_drain:
         STORE.set_drain(linked_drain, "blocked" if check["severity"] >= 3 else "partial",
@@ -232,7 +237,7 @@ async def create_report(photo: UploadFile = File(...), lat: float = Form(...),
             impact = {"segment": sid, "road": WORLD.segments[sid].name or "a nearby lane",
                       "from": b, "to": a}
             break
-    return {"report": {**report, "photo_url": f"/uploads/{path.name}"}, "impact": impact,
+    return {"report": {**report, "photo_url": f"/uploads/{name}"}, "impact": impact,
             "message": _report_message(check, linked_drain, linked_seg, impact)}
 
 
