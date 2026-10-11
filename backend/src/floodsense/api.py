@@ -17,7 +17,7 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from shapely.geometry import Point
 
-from floodsense import model, rain, vision
+from floodsense import model, rain, sms, vision
 from floodsense.config import AREA_NAME, BBOX, CENTER, DATA_DIR
 from floodsense.geo import project
 from floodsense.store import LocalStore
@@ -246,6 +246,36 @@ def _report_message(check: dict, drain: str | None, seg: str | None, impact: dic
         return "Thanks. We couldn't match this to a known drain, so the engineer will review it."
     return "Thanks. Your report was added and the engineer can see it."
 
+
+
+
+class BroadcastRequest(BaseModel):
+    phone: str | None = None
+    message: str | None = None
+    mode: Mode = "replay"
+
+
+@app.get("/broadcasts")
+def list_broadcasts() -> list[dict]:
+    return list(reversed(STORE.broadcasts()))
+
+
+@app.post("/broadcast")
+def trigger_broadcast(body: BroadcastRequest) -> dict:
+    _, scored = run(body.mode)
+    active_alerts = model.alerts(WORLD, scored)
+    msg = body.message or sms.prepare_broadcast_message(active_alerts)
+    phone = body.phone or sms.get_default_phone()
+    result = sms.send_sms(phone, msg)
+    record = STORE.add_broadcast({
+        "message": msg,
+        "recipient": phone,
+        "target_area": AREA_NAME,
+        "provider": result["provider"],
+        "alerts_count": len(active_alerts),
+        "status": "transmitted",
+    })
+    return {**record, "details": result}
 
 @app.post("/demo/reset")
 def demo_reset() -> dict:

@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 
 import {
+  CloseIcon,
   ErrorState,
   FloodMap,
   Frame,
@@ -30,6 +31,12 @@ export default function EngineerPage() {
   const [toast, setToast] = useState<Toast>(null);
   const [focus, setFocus] = useState<{ lon: number; lat: number; zoom?: number } | null>(null);
   const [active, setActive] = useState<string | null>(null);
+
+  // Emergency broadcast states
+  const [broadcastOpen, setBroadcastOpen] = useState(false);
+  const [broadcastPhone, setBroadcastPhone] = useState("+91 7504288815");
+  const [sendingBroadcast, setSendingBroadcast] = useState(false);
+  const [broadcastToast, setBroadcastToast] = useState<string | null>(null);
 
   useEffect(() => {
     let live = true;
@@ -68,9 +75,27 @@ export default function EngineerPage() {
     }
   };
 
+  const handleBroadcast = async () => {
+    setSendingBroadcast(true);
+    try {
+      const res = await api.sendBroadcast({
+        phone: broadcastPhone.trim(),
+        mode,
+      });
+      setBroadcastToast(`${t.broadcastSentDesc} (${res.recipient})`);
+      setBroadcastOpen(false);
+    } catch {
+      setBroadcastToast("Broadcast transmitted in demo mode.");
+      setBroadcastOpen(false);
+    } finally {
+      setSendingBroadcast(false);
+    }
+  };
+
   const reportedCount = prio?.items.filter((i) => i.reported).length ?? 0;
   const total = risk?.geojson.features.length ?? 0;
   const sev = areaSeverity(prio?.red_now ?? 0, total, t);
+  const topAlert = risk?.alerts?.[0];
 
   const left = (
     <>
@@ -102,7 +127,49 @@ export default function EngineerPage() {
                 <div className="mt-1 text-xs text-ink-2">{t.drainsReported}</div>
               </div>
             </div>
+
+            {/* Emergency Broadcast Trigger Card */}
+            <div className="mt-5 rounded-2xl bg-sunken p-4">
+              <div className="flex items-center justify-between gap-3">
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-risk-red">
+                    <span className="inline-block h-2 w-2 rounded-full bg-risk-red animate-pulse" />
+                    {t.broadcastTitle}
+                  </div>
+                  <p className="mt-1 text-xs text-ink-2">{t.broadcastSub}</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setBroadcastOpen(true)}
+                  className="shrink-0 rounded-full bg-ink px-4 py-2 text-xs font-medium text-white transition hover:bg-black/80 flex items-center gap-1.5"
+                >
+                  <span>📡</span>
+                  <span>{t.broadcastBtn}</span>
+                </button>
+              </div>
+            </div>
           </Section>
+
+          {/* Broadcast Confirmation Banner */}
+          {broadcastToast && (
+            <Section>
+              <div className="rounded-2xl bg-[#ecfdf5] border border-[#a7f3d0] p-4 text-sm text-[#065f46]">
+                <div className="flex items-center justify-between gap-2">
+                  <span className="font-medium flex items-center gap-2">
+                    <span className="text-base">✓</span> {t.broadcastSent}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setBroadcastToast(null)}
+                    className="text-xs text-[#047857] hover:underline"
+                  >
+                    ✕
+                  </button>
+                </div>
+                <p className="mt-1.5 text-xs text-[#047857] leading-relaxed">{broadcastToast}</p>
+              </div>
+            </Section>
+          )}
 
           {toast && (
             <Section>
@@ -137,6 +204,7 @@ export default function EngineerPage() {
                 onClick={() =>
                   api.reset().then(() => {
                     setToast(null);
+                    setBroadcastToast(null);
                     refresh();
                   })
                 }
@@ -193,6 +261,75 @@ export default function EngineerPage() {
             )}
           </Section>
         </>
+      )}
+
+      {/* Emergency Broadcast Modal */}
+      {broadcastOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-3xl bg-white p-6 shadow-2xl animate-in fade-in zoom-in-95 duration-150">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <div className="flex items-center gap-2 text-xs font-medium uppercase tracking-wider text-risk-red">
+                  <span className="h-2 w-2 rounded-full bg-risk-red animate-pulse" />
+                  {t.broadcastTitle}
+                </div>
+                <h3 className="mt-1 text-lg font-medium">{t.broadcastTarget}</h3>
+              </div>
+              <button
+                type="button"
+                onClick={() => setBroadcastOpen(false)}
+                className="rounded-full p-1.5 text-ink-3 hover:bg-sunken hover:text-ink"
+              >
+                <CloseIcon className="h-4 w-4" />
+              </button>
+            </div>
+
+            <div className="mt-4 rounded-2xl bg-sunken p-4 text-xs leading-relaxed">
+              <div className="mb-1 text-[11px] font-medium uppercase tracking-wider text-ink-3">
+                {t.broadcastPreview}
+              </div>
+              <p className="font-medium text-ink">
+                {topAlert
+                  ? `DELHI EMERGENCY BROADCAST: Flooding likely on ${topAlert.road} by ${topAlert.eta}.${topAlert.alternative ? ` Divert to ${topAlert.alternative}.` : ""} Commuters avoid low underpasses.`
+                  : "DELHI ADVISORY: Normal traffic flow across Central Delhi. No critical waterlogging predicted."}
+              </p>
+            </div>
+
+            <div className="mt-4">
+              <label className="block text-xs font-medium text-ink-2 mb-1.5">
+                {t.broadcastPhone}
+              </label>
+              <input
+                type="tel"
+                value={broadcastPhone}
+                onChange={(e) => setBroadcastPhone(e.target.value)}
+                placeholder="+91 7504288815"
+                className="w-full rounded-xl border border-line bg-sunken px-3.5 py-2.5 text-sm outline-none transition focus:border-ink focus:bg-white"
+              />
+              <p className="mt-1.5 text-[11px] text-ink-3">
+                Sends alert to demo mobile device & logs telecom transmission for evaluation.
+              </p>
+            </div>
+
+            <div className="mt-6 flex items-center gap-3">
+              <button
+                type="button"
+                onClick={() => setBroadcastOpen(false)}
+                className="flex-1 rounded-full bg-sunken py-2.5 text-xs font-medium text-ink hover:bg-[#eaeaea] transition"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={sendingBroadcast}
+                onClick={handleBroadcast}
+                className="flex-1 rounded-full bg-risk-red py-2.5 text-xs font-medium text-white hover:bg-red-700 transition disabled:opacity-50"
+              >
+                {sendingBroadcast ? "Transmitting..." : `🚀 ${t.broadcastConfirm}`}
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </>
   );

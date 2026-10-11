@@ -113,6 +113,15 @@ const en = {
   noRoadChanged: "No road changed colour for this storm.",
   drainStatus: "Drain status",
   clearLbl: "Clear",
+  broadcastTitle: "Emergency broadcast",
+  broadcastSub: "Alert commuters across Central Delhi before roads flood.",
+  broadcastBtn: "Broadcast alert",
+  broadcastSent: "Alert broadcasted",
+  broadcastSentDesc: "Emergency alert sent to Central Delhi telecom sector and test phone.",
+  broadcastTarget: "Target area: Central Delhi",
+  broadcastPhone: "Demo recipient phone",
+  broadcastConfirm: "Send broadcast",
+  broadcastPreview: "Alert preview",
 };
 
 export type Dict = typeof en;
@@ -228,6 +237,15 @@ const hi: Dict = {
   noRoadChanged: "इस तूफ़ान में किसी सड़क का रंग नहीं बदला।",
   drainStatus: "नाले की स्थिति",
   clearLbl: "साफ़",
+  broadcastTitle: "आपातकालीन प्रसारण",
+  broadcastSub: "सड़कें जलमग्न होने से पहले मध्य दिल्ली के यात्रियों को सचेत करें।",
+  broadcastBtn: "अलर्ट प्रसारित करें",
+  broadcastSent: "अलर्ट प्रसारित किया गया",
+  broadcastSentDesc: "मध्य दिल्ली टेलीकॉम सेक्टर और डेमो फोन पर अलर्ट भेजा गया।",
+  broadcastTarget: "लक्षित क्षेत्र: मध्य दिल्ली",
+  broadcastPhone: "डेमो प्राप्तकर्ता फोन",
+  broadcastConfirm: "प्रसारित करें",
+  broadcastPreview: "अलर्ट पूर्वावलोकन",
 };
 
 export const dictionaries: Record<Lang, Dict> = { en, hi };

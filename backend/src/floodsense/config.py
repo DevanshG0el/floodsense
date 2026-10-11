@@ -1,8 +1,11 @@
 """Project-wide constants: study area, paths, thresholds."""
 
 from pathlib import Path
+from dotenv import load_dotenv
 
 REPO_ROOT = Path(__file__).resolve().parents[3]
+load_dotenv(REPO_ROOT / "backend" / ".env")
+load_dotenv(REPO_ROOT / ".env")
 DATA_DIR = REPO_ROOT / "data"
 RAW_DIR = DATA_DIR / "raw"
 PROCESSED_DIR = DATA_DIR / "processed"

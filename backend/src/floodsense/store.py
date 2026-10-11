@@ -1,7 +1,7 @@
-"""State that changes at runtime: drain status and citizen reports.
+"""State that changes at runtime: drain status, citizen reports, and broadcasts.
 
 LocalStore keeps everything in a JSON file so the app runs with no cloud account.
-DynamoStore (added once AWS is set up) implements the same four methods.
+DynamoStore (added once AWS is set up) implements the same methods.
 """
 
 from __future__ import annotations
@@ -21,6 +21,8 @@ class Store(Protocol):
     def set_drain(self, drain_id: str, status: str, by: str) -> None: ...
     def reports(self) -> list[dict]: ...
     def add_report(self, report: dict) -> dict: ...
+    def broadcasts(self) -> list[dict]: ...
+    def add_broadcast(self, broadcast: dict) -> dict: ...
     def reset(self) -> None: ...
 
 
@@ -30,7 +32,7 @@ class LocalStore:
         self.path.parent.mkdir(parents=True, exist_ok=True)
         self._lock = threading.Lock()
         if not self.path.exists():
-            self._write({"drains": {}, "reports": [], "drain_log": []})
+            self._write({"drains": {}, "reports": [], "drain_log": [], "broadcasts": []})
 
     def _read(self) -> dict:
         return json.loads(self.path.read_text())
@@ -61,6 +63,18 @@ class LocalStore:
             self._write(d)
         return report
 
+    def broadcasts(self) -> list[dict]:
+        return self._read().get("broadcasts", [])
+
+    def add_broadcast(self, broadcast: dict) -> dict:
+        broadcast = {"id": uuid.uuid4().hex[:10],
+                     "created_at": datetime.now().isoformat(timespec="seconds"), **broadcast}
+        with self._lock:
+            d = self._read()
+            d.setdefault("broadcasts", []).append(broadcast)
+            self._write(d)
+        return broadcast
+
     def reset(self) -> None:
         with self._lock:
-            self._write({"drains": {}, "reports": [], "drain_log": []})
+            self._write({"drains": {}, "reports": [], "drain_log": [], "broadcasts": []})

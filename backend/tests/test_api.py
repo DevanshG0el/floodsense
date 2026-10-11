@@ -72,3 +72,13 @@ def test_counterfactual_never_makes_things_worse():
     for item in model.drain_priorities(WORLD, r, status, base):
         for c in item["changes"]:
             assert model.LEVELS.index(c["to"]) <= model.LEVELS.index(c["from"])
+
+
+def test_broadcast_endpoint():
+    res = client.post("/broadcast", json={"phone": "+919876543210", "mode": "replay"})
+    assert res.status_code == 200
+    data = res.json()
+    assert data["status"] == "transmitted"
+    assert data["recipient"] == "+919876543210"
+    assert "DELHI EMERGENCY BROADCAST" in data["message"]
+    assert len(client.get("/broadcasts").json()) >= 1
