@@ -160,10 +160,12 @@ export function Frame({
   left,
   right,
   leftFirstOnMobile = false,
+  brandAside,
 }: {
   left: React.ReactNode;
   right: React.ReactNode;
   leftFirstOnMobile?: boolean;
+  brandAside?: React.ReactNode;
 }) {
   return (
     <div className="mx-auto flex max-w-[1560px] flex-col gap-3 p-3 pb-24 md:h-dvh md:flex-row md:pb-3">
@@ -172,8 +174,9 @@ export function Frame({
           leftFirstOnMobile ? "" : "order-2 md:order-none"
         }`}
       >
-        <div className="hidden px-6 pb-5 pt-6 md:block">
+        <div className="hidden items-center justify-between px-6 pb-5 pt-6 md:flex">
           <Brand />
+          {brandAside}
         </div>
         <div className="hidden h-px bg-line md:mx-6 md:block" />
         {left}
