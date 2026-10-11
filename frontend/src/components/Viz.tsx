@@ -37,8 +37,8 @@ export function Gauge({
         y1={100 + r1 * Math.sin(a)}
         x2={100 + r2 * Math.cos(a)}
         y2={100 + r2 * Math.sin(a)}
-        stroke={on ? "#0b0b0b" : "#cfcfcf"}
-        strokeWidth={on ? 1.6 : 1}
+        stroke={on ? "#0d242e" : "#b8cbd4"}
+        strokeWidth={on ? 2 : 1.2}
         strokeLinecap="round"
       />
     );
@@ -46,14 +46,14 @@ export function Gauge({
   return (
     <figure className="relative mx-auto aspect-square w-full max-w-[170px]" aria-label={`${value.toFixed(decimals)} ${unit}, ${label}`}>
       <svg viewBox="0 0 200 200" className="h-full w-full">
-        <circle cx="100" cy="100" r="92" fill="none" stroke="#e9e9e9" strokeWidth="9" />
-        <circle cx="100" cy="100" r="86" fill="#fff" />
+        <circle cx="100" cy="100" r="92" fill="none" stroke="#b8cbd4" strokeWidth="9" />
+        <circle cx="100" cy="100" r="86" fill="var(--color-panel, #f3f8fa)" />
         {ticks}
       </svg>
       <figcaption className="absolute inset-0 flex flex-col items-center justify-center gap-1.5">
-        <span className="text-[28px] font-light tabular-nums tracking-tight">
+        <span className="text-[28px] font-bold tabular-nums tracking-tight text-ink">
           {value.toFixed(decimals)}
-          <span className="ml-0.5 text-xs text-ink-3">{unit}</span>
+          <span className="ml-1 text-xs font-semibold text-ink-3">{unit}</span>
         </span>
         <StatusPill level={level}>{label}</StatusPill>
       </figcaption>
@@ -87,9 +87,9 @@ export function RainBars({
   return (
     <svg viewBox={`0 0 ${W} ${H}`} className="h-auto w-full" role="img" aria-label="Hourly rain">
       {[0.25, 0.5, 0.75].map((g) => (
-        <line key={g} x1="0" x2={W} y1={base - g * (base - top)} y2={base - g * (base - top)} stroke="#f0f0f0" />
+        <line key={g} x1="0" x2={W} y1={base - g * (base - top)} y2={base - g * (base - top)} stroke="#dee9ee" />
       ))}
-      <path d={cum.join(" ")} fill="none" stroke="#7cb8e6" strokeWidth="1.6" />
+      <path d={cum.join(" ")} fill="none" stroke="#288da6" strokeWidth="2" />
       {hours.map((h, i) => {
         const x = step * i + step / 2;
         const y = base - (h.mm / max) * (base - top);
@@ -97,9 +97,9 @@ export function RainBars({
         return (
           <g key={h.time} onClick={() => onSelect(i)} className="cursor-pointer">
             <rect x={x - step / 2} y={0} width={step} height={H} fill="transparent" />
-            <rect x={x - 3} y={y} width={6} height={base - y} rx={3} fill={active ? "#0b0b0b" : "#e3e3e3"} />
-            <circle cx={x} cy={y - 6} r={4} fill={rateColor(h.mm)} />
-            <text x={x} y={H - 4} textAnchor="middle" fontSize="9" fill={active ? "#0b0b0b" : "#8f8f8f"}>
+            <rect x={x - 3} y={y} width={6} height={base - y} rx={3} fill={active ? "#0284c7" : "#b8cbd4"} />
+            <circle cx={x} cy={y - 6} r={4.5} fill={rateColor(h.mm)} />
+            <text x={x} y={H - 4} textAnchor="middle" fontSize="10" fontWeight={active ? "700" : "600"} fill={active ? "#0284c7" : "#476877"}>
               {clock(h.time)}
             </text>
           </g>
@@ -132,11 +132,11 @@ export function HourRuler({
             onClick={() => onSelect(i)}
             className="group relative flex flex-1 flex-col items-center justify-end gap-1.5 pb-2 pt-2"
           >
-            {active && <span className="absolute inset-y-1 left-1/2 w-[2px] -translate-x-1/2 rounded bg-ink" />}
+            {active && <span className="absolute inset-y-1 left-1/2 w-[2px] -translate-x-1/2 rounded bg-[#0284c7]" />}
             <span className={`h-2.5 w-px ${active ? "bg-transparent" : "bg-ink-3"}`} />
             <span
-              className={`relative rounded-full px-1.5 text-[11px] tabular-nums ${
-                active ? "bg-ink text-white" : "text-ink-2 group-hover:text-ink"
+              className={`relative rounded-full px-2 py-0.5 text-[11px] tabular-nums font-semibold ${
+                active ? "bg-[#0284c7] text-white shadow-xs" : "text-ink-2 group-hover:text-ink"
               }`}
             >
               {clock(h.time)}
@@ -148,7 +148,7 @@ export function HourRuler({
   );
 }
 
-export function Sparkline({ values, color = "#0b0b0b" }: { values: number[]; color?: string }) {
+export function Sparkline({ values, color = "#0d242e" }: { values: number[]; color?: string }) {
   const W = 120;
   const H = 32;
   const max = Math.max(1, ...values);
@@ -158,9 +158,9 @@ export function Sparkline({ values, color = "#0b0b0b" }: { values: number[]; col
   return (
     <svg viewBox={`0 0 ${W} ${H}`} className="h-8 w-full" aria-hidden>
       {Array.from({ length: 24 }, (_, i) => (
-        <line key={i} x1={(i / 23) * W} x2={(i / 23) * W} y1={H - 3} y2={H} stroke="#d9d9d9" />
+        <line key={i} x1={(i / 23) * W} x2={(i / 23) * W} y1={H - 3} y2={H} stroke="#b8cbd4" />
       ))}
-      <polyline points={pts} fill="none" stroke={color} strokeWidth="1.4" strokeLinejoin="round" />
+      <polyline points={pts} fill="none" stroke={color} strokeWidth="1.8" strokeLinejoin="round" />
     </svg>
   );
 }

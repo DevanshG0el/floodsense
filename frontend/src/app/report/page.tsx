@@ -105,8 +105,8 @@ export default function ReportPage() {
   const left = (
     <>
       <Section>
-        <h1 className="text-[28px] font-light leading-tight tracking-tight">{t.reportTitle}</h1>
-        <p className="mt-1.5 text-sm text-ink-2">{t.reportSub}</p>
+        <h1 className="text-[28px] font-bold leading-tight tracking-tight text-ink">{t.reportTitle}</h1>
+        <p className="mt-1.5 text-sm font-semibold text-[#0284c7]">{t.reportSub}</p>
       </Section>
 
       {result ? (
@@ -129,7 +129,7 @@ export default function ReportPage() {
                   onClick={() => setKind(k)}
                   aria-pressed={kind === k}
                   className={`rounded-2xl p-4 text-left transition ${
-                    kind === k ? "bg-ink text-white" : "bg-sunken text-ink hover:bg-[#ebebeb]"
+                    kind === k ? "bg-[#0284c7] text-white shadow-xs" : "bg-sunken text-ink hover:bg-[#e2ecf0]"
                   }`}
                 >
                   <KindIcon kind={k} className="h-6 w-6" />
@@ -156,7 +156,7 @@ export default function ReportPage() {
                 <button
                   type="button"
                   onClick={() => fileInput.current?.click()}
-                  className="rounded-full bg-sunken px-4 py-2 text-sm hover:bg-[#ebebeb]"
+                  className="rounded-full bg-sunken px-4 py-2 text-sm hover:bg-[#e2ecf0]"
                 >
                   {t.changePhoto}
                 </button>
@@ -178,7 +178,7 @@ export default function ReportPage() {
               <button
                 type="button"
                 onClick={locate}
-                className="flex items-center gap-1.5 rounded-full bg-sunken px-4 py-2 text-sm hover:bg-[#ebebeb]"
+                className="flex items-center gap-1.5 rounded-full bg-sunken px-4 py-2 text-sm hover:bg-[#e2ecf0]"
               >
                 <PinIcon className="h-4 w-4" />
                 {t.useMyLocation}
@@ -207,13 +207,13 @@ export default function ReportPage() {
   const right = (
     <>
       <TopBar />
-      <div className="relative h-[55dvh] overflow-hidden rounded-panel bg-white md:h-auto md:flex-1">
+      <div className="relative h-[55dvh] overflow-hidden rounded-panel border border-line bg-panel shadow-sm md:h-auto md:flex-1">
         <FloodMap
           center={CENTER}
           bbox={BBOX}
           pin={pin}
           focus={focus}
-          onMapClick={(lon, lat) => !result && inArea(lat, lon) && setPin({ lon, lat })}
+          onMapClick={(lon: number, lat: number) => !result && inArea(lat, lon) && setPin({ lon, lat })}
           className="h-full w-full"
           label="Pick the report location"
         />
@@ -224,7 +224,7 @@ export default function ReportPage() {
             </StatusPill>
           </div>
         )}
-        <div className="absolute bottom-3 left-3 w-[min(340px,calc(100%-1.5rem))] rounded-2xl bg-white p-4 shadow-sm">
+        <div className="absolute bottom-3 left-3 w-[min(340px,calc(100%-1.5rem))] rounded-2xl border border-line bg-panel p-4 shadow-md">
           <div className="mb-2 text-sm">{t.recent}</div>
           {recent === null ? (
             <div className="h-14 animate-pulse rounded-xl bg-sunken" />
@@ -265,7 +265,7 @@ function Step({ n, title, done }: { n: number; title: string; done: boolean }) {
     <span className="flex items-center gap-2">
       <span
         className={`grid h-5 w-5 place-items-center rounded-full text-[10px] ${
-          done ? "bg-ink text-white" : "bg-sunken text-ink-2"
+          done ? "bg-[#0284c7] text-white" : "bg-sunken text-ink-2"
         }`}
       >
         {done ? "✓" : n}
@@ -322,10 +322,10 @@ function ResultCard({ result, onAgain }: { result: ReportResult; onAgain: () => 
         )}
       </div>
       <div className="flex gap-2">
-        <Link href="/" className="flex-1 rounded-full bg-ink py-3 text-center text-sm font-medium text-white hover:bg-black/80">
+        <Link href="/" className="flex-1 rounded-full bg-[#0284c7] py-3 text-center text-sm font-semibold text-white hover:bg-[#0369a1] shadow-xs">
           {t.seeOnMap}
         </Link>
-        <button type="button" onClick={onAgain} className="flex-1 rounded-full bg-sunken py-3 text-sm hover:bg-[#ebebeb]">
+        <button type="button" onClick={onAgain} className="flex-1 rounded-full bg-sunken py-3 text-sm hover:bg-[#e2ecf0]">
           {t.another}
         </button>
       </div>

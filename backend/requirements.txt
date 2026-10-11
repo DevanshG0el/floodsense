@@ -4,7 +4,7 @@ affine==3.0.1
     # via rasterio
 aiohappyeyeballs==2.7.1
     # via aiohttp
-aiohttp==3.14.4
+aiohttp==3.14.5
     # via strands-agents-tools
 aiosignal==1.4.0
     # via aiohttp
@@ -76,7 +76,7 @@ httpcore==1.0.9
     # via httpx
 httpcore2==2.13.1 ; sys_platform != 'emscripten'
     # via httpx2
-httptools==0.8.0
+httptools==0.9.0
     # via uvicorn
 httpx==0.28.1
     # via
@@ -115,11 +115,11 @@ mdurl==0.1.2
     # via markdown-it-py
 mpmath==1.3.0
     # via sympy
-multidict==6.9.1
+multidict==7.1.0
     # via
     #   aiohttp
     #   yarl
-numpy==2.5.3
+numpy==2.5.4
     # via
     #   floodsense-backend
     #   rasterio
@@ -186,7 +186,7 @@ pyyaml==6.0.3
     # via
     #   strands-agents
     #   uvicorn
-rasterio==1.5.2
+rasterio==1.5.1
     # via floodsense-backend
 referencing==0.37.0
     # via
@@ -214,7 +214,7 @@ slack-bolt==1.30.0
     # via strands-agents-tools
 slack-sdk==3.45.0
     # via slack-bolt
-soupsieve==2.10
+soupsieve==3.0.1
     # via beautifulsoup4
 sse-starlette==3.5.0
     # via mcp
