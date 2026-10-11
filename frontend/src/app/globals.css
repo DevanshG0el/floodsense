@@ -71,6 +71,8 @@ input[type="checkbox"], input[type="radio"] {
 
 /* hide scrollbars inside panels but keep them scrollable */
 .scroll-quiet {
-  scrollbar-width: thin;
-  scrollbar-color: #9ab7c4 transparent;
+  scrollbar-width: none;
+}
+.scroll-quiet::-webkit-scrollbar {
+  display: none;
 }
