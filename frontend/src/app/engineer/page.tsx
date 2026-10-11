@@ -141,32 +141,29 @@ export default function EngineerPage() {
       {prio && (
         <>
           <Section>
-            {/* Authenticated Crew Status & Sign Out */}
-            <div className="mb-4 flex items-center justify-between rounded-xl border border-line bg-panel px-3.5 py-2.5 shadow-2xs">
-              <div className="flex items-center gap-2.5">
-                <div className="grid h-7 w-7 place-items-center rounded-lg bg-sunken text-ink">
-                  <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
-                    <path d="m9 12 2 2 4-4" />
-                  </svg>
-                </div>
-                <div className="flex items-baseline gap-2">
-                  <span className="text-xs font-bold text-ink">Authorized Drain Crew</span>
-                  <span className="text-ink-4">·</span>
-                  <span className="font-mono text-[11px] font-semibold text-ink-3">Badge {badgeId || "MCD-ENG-4092"}</span>
-                </div>
-              </div>
+            {/* Mobile-only auth row */}
+            <div className="mb-3 flex items-center justify-between md:hidden">
+              <span className="font-mono text-xs font-semibold text-ink-2">
+                {badgeId || "MCD-ENG-4092"}
+              </span>
               <button
                 type="button"
                 onClick={handleSignOut}
-                className="rounded-lg border border-line bg-sunken px-2.5 py-1 text-xs font-semibold text-ink-2 transition hover:bg-line hover:text-ink"
+                className="rounded-lg border border-line bg-sunken px-2.5 py-1 text-xs font-semibold text-ink-2"
               >
                 Sign Out
               </button>
             </div>
 
-            <h1 className="text-[28px] font-bold leading-tight tracking-tight text-ink">{t.engTitle}</h1>
-            <p className="mt-1.5 text-sm font-semibold text-[#0284c7]">{t.engSub}</p>
+            <div>
+              <h1 className="text-[26px] font-bold leading-tight tracking-tight text-ink sm:text-[28px]">
+                {t.engTitle}
+              </h1>
+              <p className="mt-2 text-xs font-medium leading-relaxed text-ink-3">
+                {t.engSub}
+              </p>
+            </div>
+
             <div className="mt-5 grid grid-cols-2 gap-4">
               <div>
                 <div className="flex items-start gap-2">
@@ -183,25 +180,16 @@ export default function EngineerPage() {
               </div>
             </div>
 
-            {/* Emergency Broadcast Trigger Card */}
-            <div className="mt-5 rounded-2xl bg-sunken p-4">
-              <div className="flex items-center justify-between gap-3">
-                <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-risk-red">
-                    <span className="inline-block h-2 w-2 rounded-full bg-risk-red animate-pulse" />
-                    {t.broadcastTitle}
-                  </div>
-                  <p className="mt-1 text-xs text-ink-2">{t.broadcastSub}</p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => setBroadcastOpen(true)}
-                  className="shrink-0 rounded-full bg-[#0284c7] px-4 py-2 text-xs font-semibold text-white transition hover:bg-[#0369a1] flex items-center gap-1.5 shadow-xs"
-                >
-                  <span>📢</span>
-                  <span>{t.broadcastBtn}</span>
-                </button>
-              </div>
+            {/* Properly written Broadcast Alert button */}
+            <div className="mt-5">
+              <button
+                type="button"
+                onClick={() => setBroadcastOpen(true)}
+                className="flex w-full items-center justify-center gap-2 rounded-xl bg-[#0284c7] px-4 py-3 text-sm font-bold text-white shadow-md transition hover:bg-[#0369a1] active:scale-[0.99]"
+              >
+                <span>📢</span>
+                <span>Broadcast Alert</span>
+              </button>
             </div>
           </Section>
 
@@ -289,7 +277,7 @@ export default function EngineerPage() {
                         type="button"
                         disabled={busy === it.drain}
                         onClick={() => markCleaned(it.drain)}
-                        className="rounded-full bg-[#0284c7] px-4 py-1.5 text-xs font-bold text-white hover:bg-[#0369a1] disabled:bg-ink-4 shadow-xs"
+                        className="rounded-full border border-[#b8d8e8] bg-[#e6f2f8] px-3.5 py-1.5 text-xs font-semibold text-[#1a526d] transition hover:bg-[#d4e8f2] hover:text-[#0d3446] active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 shadow-2xs"
                       >
                         {busy === it.drain ? "…" : `✓ ${t.markCleaned}`}
                       </button>
@@ -410,9 +398,24 @@ export default function EngineerPage() {
     </>
   );
 
+    const crewAuth = (
+    <div className="flex items-center gap-2.5">
+      <span className="font-mono text-xs font-semibold text-ink-2">
+        {badgeId || "MCD-ENG-4092"}
+      </span>
+      <button
+        type="button"
+        onClick={handleSignOut}
+        className="rounded-lg border border-line bg-sunken px-2.5 py-1 text-xs font-semibold text-ink-2 transition hover:bg-line hover:text-ink"
+      >
+        Sign Out
+      </button>
+    </div>
+  );
+
   return (
     <>
-      <Frame left={left} right={right} />
+      <Frame left={left} right={right} brandAside={crewAuth} />
 
       {/* -------------------- Clean, Modern Municipal Login Popup -------------------- */}
       {!isAuthenticated && (
